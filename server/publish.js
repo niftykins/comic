@@ -6,6 +6,15 @@ Meteor.publish('chapters', function() {
 	return Chapters.find({}, {sort: {chapter: 1}});
 });
 
+//push admin field
+Meteor.publish("userData", function() {
+	return Meteor.users.find({ _id: this.userId }, {
+		fields: {
+			admin: 1
+		}
+	});
+});
+
 if(Pages.find().count() === 0) {
 	var now = new Date().getTime();
 	var hour = 3600 * 1000;
@@ -59,3 +68,6 @@ if(Pages.find().count() === 0) {
 		}
 	});
 }
+
+// make me an admin
+Meteor.users.update({ username: "nifty" }, {$set: { admin: true } });

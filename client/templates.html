@@ -5,6 +5,7 @@
 <template name="layout">
 	<div class="container">
 		{{> header}}
+		{{> meteorErrors}}
 		<div class="row-fluid">
 			{{yield}}
 		</div>
@@ -17,6 +18,9 @@
 			<a class="brand" href="{{pathFor 'home'}}">BiS Comic</a>
 			<ul class="nav">
 				<li><a href="{{pathFor 'archive'}}">Archive</a></li>
+				{{#if isAdmin}}
+					<li><a href="{{pathFor 'submit'}}">Submit</a></li>
+				{{/if}}
 			</ul>
 			<ul class="nav pull-right">
 				<li>{{loginButtons}}</li>
@@ -29,8 +33,16 @@
 	{{> spinner}}
 </template>
 
+<template name="noLogin">
+	<div class="alert alert-error">Please log in.</div>
+</template>
+
+<template name="noAdmin">
+	<div class="alert alert-error">Your account cannot do this.</div>
+</template>
+
 <template name="home">
-	bleh
+	super awesome home page
 </template>
 
 <template name="archive">
@@ -68,4 +80,19 @@
 	<div class="page">
 		{{location}}
 	</div>
+</template>
+
+<template name="submit">
+	<form class="main">
+		<div class="control-group">
+			<label class="control-label" for="chapter">Chapter</label>
+			<div class="controls">
+				<select name="chapter" class="form-control">
+					{{#each chapters}}
+						<option>{{chapter}}</option>
+					{{/each}}
+				</select>
+			</div>
+		</div>
+	</form>
 </template>
