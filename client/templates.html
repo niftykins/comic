@@ -1,0 +1,71 @@
+<head>
+	<title>BiS Comic</title>
+</head>
+
+<template name="layout">
+	<div class="container">
+		{{> header}}
+		<div class="row-fluid">
+			{{yield}}
+		</div>
+	</div>
+</template>
+
+<template name="header">
+	<header class="navbar">
+		<div class="navbar-inner">
+			<a class="brand" href="{{pathFor 'home'}}">BiS Comic</a>
+			<ul class="nav">
+				<li><a href="{{pathFor 'archive'}}">Archive</a></li>
+			</ul>
+			<ul class="nav pull-right">
+				<li>{{loginButtons}}</li>
+			</ul>
+		</div>
+	</header>
+</template>
+
+<template name="loading">
+	{{> spinner}}
+</template>
+
+<template name="home">
+	bleh
+</template>
+
+<template name="archive">
+	<div class="chapters">
+		{{#each chapters}}
+			{{> chapterArchive}}
+		{{/each}}
+	</div>
+</template>
+
+<template name="chapterArchive">
+	<div class="chapter well">
+		<h3><a href="{{pathFor 'chapter'}}">
+			chapter {{chapter}}, {{title}}
+		</h3></a>
+		<span>{{pluralize pageCount "page"}}</span>
+	</div>
+</template>
+
+<template name="chapter">
+	<div class="chapter well">
+		<h3><a href="{{pathFor 'chapter'}}">
+			chapter {{chapter}}, {{title}}
+		</h3></a>
+
+		random stuff to know page is there:
+
+		{{#each pages}}
+			{{> page}}
+		{{/each}}
+	</div>
+</template>
+
+<template name="page">
+	<div class="page">
+		{{location}}
+	</div>
+</template>
