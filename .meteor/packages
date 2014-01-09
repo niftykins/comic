@@ -9,5 +9,10 @@ bootstrap
 iron-router
 accounts-ui-bootstrap-dropdown
 accounts-password
-errors
 spin
+moment
+errors
+gm
+collectionFS
+cfs-public-folder
+imagemagick

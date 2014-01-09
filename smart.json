@@ -2,6 +2,10 @@
   "packages": {
     "iron-router": {},
     "accounts-ui-bootstrap-dropdown": {},
-    "spin": {}
+    "spin": {},
+    "moment": {},
+    "gm": {},
+    "collectionFS": {},
+    "imagemagick": {}
   }
 }

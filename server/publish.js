@@ -15,6 +15,33 @@ Meteor.publish("userData", function() {
 	});
 });
 
+Meteor.publish('images', function() {
+	return Images.find({complete: true});
+});
+var handles = {
+	default: function(options) {
+		return {
+			blob: options.blob,
+			fileRecord: options.fileRecord
+		};
+	},
+	thumb: function(options) {
+		var destination = options.destination();
+
+		Imagemagick.resize({
+			srcData: options.blob,
+			dstPath: destination.serverFilename,
+			quality: 0.2,
+			width: 140
+		});
+
+		console.log("Writing thumb", destination.fileData.url);
+		return destination.fileData;
+	}
+};
+
+Images.fileHandlers(handles);
+
 if(Pages.find().count() === 0) {
 	var now = new Date().getTime();
 	var hour = 3600 * 1000;
@@ -50,7 +77,7 @@ if(Pages.find().count() === 0) {
 		authorId: author._id,
 		author: author.profile.name,
 		posted: now - 5 * hour,
-		chapter: 3,
+		chapter: 4,
 		pageCount: 2
 	});
 
@@ -63,7 +90,8 @@ if(Pages.find().count() === 0) {
 				page: i + 1,
 				author: author.profile.name,
 				authorId: author._id,
-				location: "<chapter " + chapter.chapter + " page " + (i+1) + ">"
+				posted: now + i * hour,
+				fileName: "<chapter " + chapter.chapter + " page " + (i+1) + ">"
 			});
 		}
 	});
@@ -71,3 +99,30 @@ if(Pages.find().count() === 0) {
 
 // make me an admin
 Meteor.users.update({ username: "nifty" }, {$set: { admin: true } });
+
+writeFile = function(name, data, type) {
+	var fs = Npm.require('fs');
+	var path = Npm.require('path');
+	var gm = Meteor.GM.subClass({ imageMagick: true });
+
+	var base = process.env.PWD || process.env.pwd; //changes?
+
+	var dir;
+	switch(type) {
+		case "comic": dir = "comics/"; break;
+		case "silly": dir = "sillies/"; break;
+		case "cover": dir = "covers/"; break;
+		default: dir = "comic/"; break;
+	}
+
+	dir = path.join(base, 'public', dir);
+	
+	try {
+		fs.writeFileSync(dir + name, data, 'base64');
+		gm(dir + name).resize(140).write(dir + "thumb_" + name, function(err) {
+			if(err) console.log("Thumb error:", err);
+		});
+	} catch(e) {
+		throw new Meteor.Error(500, "Error writing file to server.");
+	}
+};

@@ -3,20 +3,32 @@
   "dependencies": {
     "basePackages": {
       "iron-router": {
-        "version": "0.6.1"
+        "version": "0.6.2"
       },
       "accounts-ui-bootstrap-dropdown": {
         "version": "0.6.5.1"
       },
       "spin": {
         "version": "0.2.0"
+      },
+      "moment": {
+        "version": "2.2.1"
+      },
+      "gm": {
+        "version": "0.0.10"
+      },
+      "collectionFS": {
+        "version": "0.3.7"
+      },
+      "imagemagick": {
+        "version": "0.1.2"
       }
     },
     "packages": {
       "iron-router": {
         "git": "https://github.com/EventedMind/iron-router.git",
-        "tag": "v0.6.1",
-        "commit": "4e1ee0581d68bff422a915dacb0bd30eae10fe08"
+        "tag": "v0.6.2",
+        "commit": "ce56e58b45624dce992490f3a1c10f10d3948bae"
       },
       "accounts-ui-bootstrap-dropdown": {
         "git": "https://github.com/erobit/meteor-accounts-ui-bootstrap-dropdown.git",
@@ -27,6 +39,31 @@
         "git": "https://github.com/SachaG/meteor-spin.git",
         "tag": "v0.2.0",
         "commit": "fd3a2871a69442848b4b4e74f5e1ae28fa4a95a4"
+      },
+      "moment": {
+        "git": "https://github.com/acreeger/meteor-moment.git",
+        "tag": "v2.2.1",
+        "commit": "9ee12e714afe56b189f53076447b7b54f3012065"
+      },
+      "gm": {
+        "git": "https://github.com/dmplutenko/meteor-gm.git",
+        "tag": "v0.0.10",
+        "commit": "fa6e7f0d7c98df84ca0a451e046091bf83f7ba46"
+      },
+      "collectionFS": {
+        "git": "https://github.com/raix/Meteor-CollectionFS.git",
+        "tag": "v0.3.7",
+        "commit": "34d9fb363472e44c6dba4a1473a9e106e107f5a9"
+      },
+      "imagemagick": {
+        "git": "https://github.com/sylvaingi/meteor-imagemagick.git",
+        "tag": "v0.1.2",
+        "commit": "d67bb926356d35cdff1a6d6c3c69750f3f54c059"
+      },
+      "cfs-public-folder": {
+        "git": "https://github.com/nooitaf/meteor-cfs-public-folder.git",
+        "tag": "v0.0.3",
+        "commit": "581c716424b374efb6f611110002621f9cc9212b"
       }
     }
   }

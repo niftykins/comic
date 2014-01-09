@@ -43,6 +43,10 @@
 
 <template name="home">
 	super awesome home page
+	{{#each cfsFiles "Images"}}
+		{{debug}}
+		<img src='{{cfsFileUrl "thumb"}}'>
+	{{/each}}
 </template>
 
 <template name="archive">
@@ -71,28 +75,70 @@
 		random stuff to know page is there:
 
 		{{#each pages}}
-			{{> page}}
+			{{> pageChapter}}
 		{{/each}}
 	</div>
 </template>
 
-<template name="page">
+<template name="pageChapter">
 	<div class="page">
-		{{location}}
+		<a href="{{pathFor 'page'}}">{{fileName}}</a>
 	</div>
 </template>
 
+<template name="page">
+	<div class="page well">
+		<h3>
+			<a href="{{pathFor 'chapter'}}">Chapter {{chapter}}</a>, Page {{page}}
+		</h3>
+		<p>By {{author}}</p>
+		<P>{{timeAgo posted}}</P>
+		<p>{{fileName}}</p>
+	</div>
+</template>
+
+
 <template name="submit">
-	<form class="main">
-		<div class="control-group">
-			<label class="control-label" for="chapter">Chapter</label>
-			<div class="controls">
-				<select name="chapter" class="form-control">
-					{{#each chapters}}
-						<option>{{chapter}}</option>
-					{{/each}}
-				</select>
-			</div>
+	{{> submitChapter}}
+	<br>
+	{{> submitPage}}
+</template>
+
+<template name="submitChapter">
+	<form class="main" id="submit-page">
+		<div class="form-group">
+			<label class="form-label" for="chapter">New chapter</label>
+			<select name="chapter" class="form-control">
+				{{#each newChapters}}<option>{{this}}</option>{{/each}}
+			</select>
+		</div>
+
+		<div class="form-group">
+			<input name="title" type="text" value="" placeholder="chapter title">
+		</div>
+
+		<div class="form-group">
+			<input type="submit" value="Submit" class="btn btn-primary">
+		</div>
+	</form>
+</template>
+
+<template name="submitPage">
+	<form class="main" id="submit-page">
+		<div class="form-group">
+			<label class="form-label" for="chapter">For chapter</label>
+			<select name="chapter" class="form-control">
+				{{#each chapters}}<option>{{chapter}} - {{title}}</option>{{/each}}
+			</select>
+		</div>
+
+		<div class="form-group">
+			<label for="file">Comic Panel</label>
+			<input type="file" name="file">
+		</div>
+
+		<div class="form-group">
+			<input type="submit" value="Submit" class="btn btn-primary">
 		</div>
 	</form>
 </template>
