@@ -85,9 +85,9 @@ Template.submitPage.helpers({
 		return Chapters.find({}, { sort: { chapter: -1 }, fields: { chapter: 1, title: 1 } });
 	},
 	file: function() {
-		var id = Session.get("uploadId");
-		console.log(id);
-		return Images.findOne(id);
+		console.log("session thing")
+		if(!Session.equals("uploadId", null))
+			return Images.findOne(Session.get("uploadId"));
 	}
 });
 
@@ -109,6 +109,12 @@ Template.submitPage.events({
 		}
 
 		var fileId = Images.storeFile(file);
+
+		if(!fileId)
+			Errors.throw("Problem uploading image :(");
+		else
+			Errors.throw("Uploading image.", "info");
+
 		Session.set("uploadId", fileId);
 
 		var page = {
@@ -129,6 +135,7 @@ Template.submitPage.events({
 				console.log('complete');
 				Meteor.clearTimeout(timer);
 				Meteor.call('page', page, function(error, r) {
+					Session.set("uploadId", null);
 					if(error) {
 						if(error.error === 400)
 							Errors.throw("One of the fields wasn't the correct type, hax0r?");
