@@ -1,6 +1,5 @@
 Template.home.helpers({
 	file: function() {
-		console.log(Images.find())
 		return Images.find();
 	}
 });
@@ -11,9 +10,22 @@ Template.archive.helpers({
 	}
 });
 
+Template.pageChapter.helpers({
+	file: function() {
+		return Images.findOne(this.fileId);
+	}
+});
+
 Template.chapter.helpers({
 	pages: function() {
 		return Pages.find({ chapter: this.chapter });
+	}
+});
+
+Template.page.helpers({
+	file: function() {
+		console.log(this);
+		return Images.findOne(this.fileId);
 	}
 });
 
@@ -27,6 +39,9 @@ Template.submitChapter.helpers({
 		chapters.forEach(function(c) {
 			current.push(c.chapter);
 		});
+
+		if(current.length === 0)
+			return [1]; // no chapters, just show 1
 
 		var max = _.max(current);
 
@@ -68,6 +83,11 @@ Template.submitChapter.events({
 Template.submitPage.helpers({
 	chapters: function() {
 		return Chapters.find({}, { sort: { chapter: -1 }, fields: { chapter: 1, title: 1 } });
+	},
+	file: function() {
+		var id = Session.get("uploadId");
+		console.log(id);
+		return Images.findOne(id);
 	}
 });
 
@@ -89,32 +109,37 @@ Template.submitPage.events({
 		}
 
 		var fileId = Images.storeFile(file);
+		Session.set("uploadId", fileId);
 
-		var reader = new FileReader();
-
-		reader.onload = function(e) {
-			var page = {
-				chapter: c,
-				fileName: file.name,
-				type: file.type,
-				dataURL: reader.result,
-				size: file.size
-			};
-
-			console.log(page);
-
-			Meteor.call('page', page, function(error, r) {
-				if(error) {
-					if(error.error === 400)
-						Errors.throw("One of the fields wasn't the correct type, hax0r?");
-					else
-						Errors.throw(error.reason);
-				} else {}
-					//Router.go('page', { chapter: r.chapter, page: r.page });
-			});
+		var page = {
+			chapter: c,
+			type: file.type,
+			fileId: fileId
 		};
 
-		reader.readAsDataURL(file);
+		console.log(page);
+
+		var image;
+
+		var timer = Meteor.setInterval(function() {
+			console.log('timer');
+			image = Images.findOne(fileId);
+
+			if(image && image.complete) {
+				console.log('complete');
+				Meteor.clearTimeout(timer);
+				Meteor.call('page', page, function(error, r) {
+					if(error) {
+						if(error.error === 400)
+							Errors.throw("One of the fields wasn't the correct type, hax0r?");
+						else
+							Errors.throw(error.reason);
+					} else {}
+						Router.go('page', { chapter: r.chapter, page: r.page });
+				});
+			}
+		}, 1000);
+
 	}
 });
 

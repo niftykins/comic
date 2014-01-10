@@ -41,10 +41,13 @@
 	<div class="alert alert-error">Your account cannot do this.</div>
 </template>
 
+<template name="notFound">
+	<div class="alert alert-error">Not found.</div>
+</template>
+
 <template name="home">
 	super awesome home page
 	{{#each cfsFiles "Images"}}
-		{{debug}}
 		<img src='{{cfsFileUrl "thumb"}}'>
 	{{/each}}
 </template>
@@ -82,7 +85,7 @@
 
 <template name="pageChapter">
 	<div class="page">
-		<a href="{{pathFor 'page'}}">{{fileName}}</a>
+		<a href="{{pathFor 'page'}}">{{page}} <img src='{{cfsFileUrl "thumb" file=file}}'></a>
 	</div>
 </template>
 
@@ -93,7 +96,7 @@
 		</h3>
 		<p>By {{author}}</p>
 		<P>{{timeAgo posted}}</P>
-		<p>{{fileName}}</p>
+		<img src='{{cfsFileUrl "default" file=file}}'>
 	</div>
 </template>
 
@@ -141,4 +144,11 @@
 			<input type="submit" value="Submit" class="btn btn-primary">
 		</div>
 	</form>
+	{{#with file}}
+		{{#if cfsIsUploading "Images"}}
+			<div class="progress">
+				<div class="bar" style='width: {{cfsQueueProgress "Images"}}%;'></div>
+			</div>
+		{{/if}}
+	{{/with}}
 </template>

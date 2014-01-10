@@ -5,14 +5,13 @@
 
 standard-app-packages
 preserve-inputs
-bootstrap
 iron-router
 accounts-ui-bootstrap-dropdown
 accounts-password
 spin
 moment
 errors
-gm
 collectionFS
 cfs-public-folder
 imagemagick
+bootstrap

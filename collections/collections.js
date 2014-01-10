@@ -44,10 +44,8 @@ Meteor.methods({
 	page: function(attrs) {
 		check(attrs, {
 			chapter: Match.Integer,
-			fileName: String,
 			type: String,
-			dataURL: String,
-			size: Match.Integer
+			fileId: String
 		});
 
 		var user = Meteor.user();
@@ -64,17 +62,15 @@ Meteor.methods({
 		if(!chapter) // no chapter
 			throw new Meteor.Error(422, "Chapter doesn't exist.");
 
-		attrs.fileName.replace(/\.\./g,'').replace(/\//g,''); //clean name
-		if(!attrs.fileName)
-			throw new Meteor.Error(422, "Somehow file without a name?");
-
-		if(!attrs.dataURL || !isImage(attrs.type))
+		if(!isImage(attrs.type))
 			throw new Meteor.Error(422, "New page needs an image.");
-		attrs.dataURL = attrs.dataURL.replace(/^data:.*base64,/, '');
+
+		if(!attrs.fileId)
+			throw new Meteor.Error(422, "Pretty sure you image upload broke.");
 
 		var nextPage = chapter.pageCount + 1;
 
-		var page = _.extend(_.pick(attrs, 'chapter', 'fileName'), {
+		var page = _.extend(_.pick(attrs, 'chapter', 'fileId'), {
 			authorId: user._id,
 			author: user.username,
 			chapterId: chapter._id,
@@ -82,7 +78,6 @@ Meteor.methods({
 			posted: new Date().getTime()
 		});
 
-		return;
 		var pageId = Pages.insert(page);
 
 		Chapters.update(chapter._id, { $inc: { pageCount: 1 } });
