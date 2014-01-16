@@ -16,7 +16,7 @@ Meteor.publish("userData", function() {
 });
 
 Meteor.publish('images', function() {
-	return Images.find({complete: true});
+	return Images.find();
 });
 var handles = {
 	default: function(options) {

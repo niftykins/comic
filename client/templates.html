@@ -1,4 +1,7 @@
 <head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>BiS Comic</title>
 </head>
 
@@ -6,27 +9,38 @@
 	<div class="container">
 		{{> header}}
 		{{> meteorErrors}}
-		<div class="row-fluid">
+		<div class="row">
 			{{yield}}
 		</div>
 	</div>
 </template>
 
 <template name="header">
-	<header class="navbar">
-		<div class="navbar-inner">
-			<a class="brand" href="{{pathFor 'home'}}">BiS Comic</a>
-			<ul class="nav">
-				<li><a href="{{pathFor 'archive'}}">Archive</a></li>
+	<div class="navbar navbar-default" role="navigation">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			<a class="navbar-brand" href="{{pathFor 'home'}}">BiS Comic</a>
+		</div>
+
+		<div class="collapse navbar-collapse">
+			<ul class="nav navbar-nav">
+				<li class="{{active 'home'}}"><a href="{{pathFor 'home'}}">Latest</a></li>
+				<li class="{{active 'archive'}}"><a href="{{pathFor 'archive'}}">Archive</a></li>
 				{{#if isAdmin}}
-					<li><a href="{{pathFor 'submit'}}">Submit</a></li>
+					<li class="{{active 'submit'}}"><a href="{{pathFor 'submit'}}">Submit</a></li>
+					<li class="{{active 'edit'}}"><a href="{{pathFor 'edit'}}">Edit</a></li>
 				{{/if}}
 			</ul>
-			<ul class="nav pull-right">
-				<li>{{loginButtons}}</li>
+			<ul class="nav navbar-nav navbar-right">
+				<li><a>{{loginButtons}}</a></li>
 			</ul>
 		</div>
-	</header>
+	</div>
 </template>
 
 <template name="loading">
@@ -34,22 +48,33 @@
 </template>
 
 <template name="noLogin">
-	<div class="alert alert-error">Please log in.</div>
+	<div class="alert alert-danger">Please log in.</div>
 </template>
 
 <template name="noAdmin">
-	<div class="alert alert-error">Your account cannot do this.</div>
+	<div class="alert alert-danger">Your account cannot do this.</div>
 </template>
 
 <template name="notFound">
-	<div class="alert alert-error">Not found.</div>
+	<div class="alert alert-danger">Not found.</div>
+</template>
+
+<template name="noContent">
+	<div class="alert alert-danger">There is no content.</div>
+</template>
+
+<template name="progressBar">
+	{{#with getProgressFile}}
+		{{#if cfsIsUploading "Images"}}
+			<div class="progress">
+				<div class="progress-bar" style='width: {{cfsQueueProgress "Images"}}%;'></div>
+			</div>
+		{{/if}}
+	{{/with}}
 </template>
 
 <template name="home">
-	super awesome home page
-	{{#each cfsFiles "Images"}}
-		<img src='{{cfsFileUrl "thumb"}}'>
-	{{/each}}
+	{{> page}}
 </template>
 
 <template name="archive">
@@ -61,9 +86,9 @@
 </template>
 
 <template name="chapterArchive">
-	<div class="chapter well">
+	<div class="well">
 		<h3><a href="{{pathFor 'chapter'}}">
-			chapter {{chapter}}, {{title}}
+			Chapter {{chapter}}, {{title}}
 		</h3></a>
 		<span>{{pluralize pageCount "page"}}</span>
 	</div>
@@ -72,10 +97,9 @@
 <template name="chapter">
 	<div class="chapter well">
 		<h3><a href="{{pathFor 'chapter'}}">
-			chapter {{chapter}}, {{title}}
-		</h3></a>
-
-		random stuff to know page is there:
+			Chapter {{chapter}}, {{title}}
+		</a></h3>
+		<span>{{pluralize pageCount "page"}}</span>
 
 		{{#each pages}}
 			{{> pageChapter}}
@@ -84,8 +108,10 @@
 </template>
 
 <template name="pageChapter">
-	<div class="page">
-		<a href="{{pathFor 'page'}}">{{page}} <img src='{{cfsFileUrl "thumb" file=file}}'></a>
+	<div class="pageChapter">
+		<a href="{{pathFor 'page'}}">
+			{{page}} <img src='{{cfsFileUrl "thumb" file=file}}'>
+		</a>
 	</div>
 </template>
 
@@ -96,19 +122,47 @@
 		</h3>
 		<p>By {{author}}</p>
 		<P>{{timeAgo posted}}</P>
+		{{> arrows}}
 		<img src='{{cfsFileUrl "default" file=file}}'>
 	</div>
 </template>
 
+<template name="arrows">
+	<div class="arrows unselectable">
+		{{#if notFirst}}
+			{{#with first}}
+				<a href="{{pathFor 'page'}}"><i class="fa fa-3x fa-angle-double-left"></i></a>
+			{{/with}}
+
+			{{#with previous}}
+				<a href="{{pathFor 'page'}}"><i class="fa fa-3x fa-angle-left"></i></a>
+			{{/with}}
+		{{/if}}
+
+		<a href="{{pathFor 'archive'}}" class="btn btn-default">Archive</a>
+
+		{{#if notLast}}
+			{{#with next}}
+				<a href="{{pathFor 'page'}}"><i class="fa fa-3x fa-angle-right"></i></a>
+			{{/with}}
+
+			{{#with last}}
+				<a href="{{pathFor 'page'}}"><i class="fa fa-3x fa-angle-double-right"></i></a>
+			{{/with}}
+		{{/if}}
+	</div>
+</template>
 
 <template name="submit">
 	{{> submitChapter}}
 	<br>
-	{{> submitPage}}
+	{{#if isChapters}}
+		{{> submitPage}}
+	{{/if}}
 </template>
 
 <template name="submitChapter">
-	<form class="main" id="submit-page">
+	<form class="submit-new form-horizontal" id="submit-page">
 		<div class="form-group">
 			<label class="form-label" for="chapter">New chapter</label>
 			<select name="chapter" class="form-control">
@@ -117,7 +171,7 @@
 		</div>
 
 		<div class="form-group">
-			<input name="title" type="text" value="" placeholder="chapter title">
+			<input name="title" type="text" value="" class="form-control" placeholder="chapter title">
 		</div>
 
 		<div class="form-group">
@@ -127,7 +181,7 @@
 </template>
 
 <template name="submitPage">
-	<form class="main" id="submit-page">
+	<form class="submit-new form-horizontal" id="submit-page">
 		<div class="form-group">
 			<label class="form-label" for="chapter">For chapter</label>
 			<select name="chapter" class="form-control">
@@ -136,7 +190,7 @@
 		</div>
 
 		<div class="form-group">
-			<label for="file">Comic Panel</label>
+			<label for="file">Comic Image</label>
 			<input type="file" name="file">
 		</div>
 
@@ -144,11 +198,101 @@
 			<input type="submit" value="Submit" class="btn btn-primary">
 		</div>
 	</form>
-	{{#with file}}
-		{{#if cfsIsUploading "Images"}}
-			<div class="progress">
-				<div class="bar" style='width: {{cfsQueueProgress "Images"}}%;'></div>
+	
+	{{> progressBar}}
+</template>
+
+<template name="edit">
+	{{debug}}
+	<div class="edit">
+		<div class="options">
+			<select name="chapter">
+				{{#each selectChapters}}<option>{{chapter}} - {{title}}</option>{{/each}}
+			</select>
+
+			<select name="page">
+				<option>cover</option>
+				{{#each selectPages}}<option>{{page}}</option>{{/each}}
+			</select>
+		</div>
+
+		{{yield 'edit'}}
+	</div>
+</template>
+
+<template name="editPage">
+	<div class="page well">
+		{{> progressBar}}
+
+		<div class="edit-buttons pull-right">
+			<div id="btn-remove" class="unselectable btn btn-danger">Remove</div>
+			<div id="btn-update" class="btn btn-primary">Update</div>
+		</div>
+
+		<h3>
+			Edit: <a href="{{pathFor 'chapter'}}">Chapter {{chapter}}</a>, Page {{page}}
+		</h3>
+		<p>By {{author}}</p>
+		<P>{{timeAgo posted}}</P>
+		<div class="new-image">
+			<label for="file-input">
+				<div class="wrap">
+					<p class="small text-center">Click to change</p>
+					<img class="editImage" src='{{cfsFileUrl "default" file=file}}'>
+				</div>
+			</label>
+
+			<input id="file-input" type="file">
+		</div>
+	</div>
+
+	<div id="confirm-modal" class="modal fade" tabindex="-1">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					<h4 class="modal-title">Remove</h4>
+				</div>
+				<div class="modal-body">
+					<p>Are you sure you want to remove Ch{{chapter}} Pg{{page}}?</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					<button type="button" id="confirm-remove" class="btn btn-danger">Remove</button>
+				</div>
 			</div>
-		{{/if}}
-	{{/with}}
+		</dic>
+	</div>
+</template>
+
+<template name="editChapter">
+	<div class="well">
+		<div class="edit-buttons pull-right">
+			<div id="btn-remove" class="unselectable btn btn-danger">Remove</div>
+			<div id="btn-update" class="btn btn-primary">Update</div>
+		</div>
+
+		<h3>
+			Chapter {{chapter}}, <span name="title" class="editable" data-type='text'>{{title}}</span>
+		</h3>
+		<span>{{pluralize pageCount "page"}}</span>
+	</div>
+
+	<div id="confirm-modal" class="modal fade" tabindex="-1">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					<h4 class="modal-title">Remove</h4>
+				</div>
+				<div class="modal-body">
+					<p>Are you sure you want to remove Chapter {{chapter}} and all of its pages?</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					<button type="button" id="confirm-remove" class="btn btn-danger">Remove</button>
+				</div>
+			</div>
+		</dic>
+	</div>
 </template>

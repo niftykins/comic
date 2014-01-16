@@ -6,7 +6,6 @@
 standard-app-packages
 preserve-inputs
 iron-router
-accounts-ui-bootstrap-dropdown
 accounts-password
 spin
 moment
@@ -14,4 +13,7 @@ errors
 collectionFS
 cfs-public-folder
 imagemagick
-bootstrap
+bootstrap-3
+accounts-ui-bootstrap-3
+font-awesome-4
+x-editable-bootstrap3

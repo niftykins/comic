@@ -1,7 +1,50 @@
 .arrows {
-	text-align: center;
 	margin-bottom: 15px;
+	text-align: center;
 }
 .arrows .fa {
 	vertical-align: middle;
+	margin-left: 10px;
+	margin-right: 10px;
+}
+.arrows .btn {
+	margin-left: 10px;
+	margin-right: 10px;
+}
+.unselectable {
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	-o-user-select: none;
+	user-select: none;
+}
+img {
+	max-width: 100%;
+}
+.page img {
+	display: block;
+	margin: 0 auto;
+}
+
+.pageChapter {
+	margin-top: 10px;
+}
+
+.edit .options {
+	margin-bottom: 15px;
+}
+
+.new-image {
+	text-align: center;
+}
+.new-image > input {
+	display: none;
+}
+.wrap {
+	display: inline-block;
+	cursor: pointer;
+}
+
+select {
+	font-size: 18px;
 }

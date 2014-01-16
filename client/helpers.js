@@ -1,12 +1,22 @@
-Template.home.helpers({
-	file: function() {
-		return Images.find();
+var sort = { sort: ["chapter", "page"] };
+//$.fn.editable.defaults.mode = 'inline';
+
+Template.header.helpers({
+	active: function() {
+		var args = Array.prototype.slice.call(arguments, 0);
+		args.pop(); // last element is hash
+
+		var active = _.any(args, function(name) {
+			return Router.current().route.name === name;
+		});
+
+		return active && 'active';
 	}
 });
 
 Template.archive.helpers({
 	chapters: function() {
-		return Chapters.find();
+		return Chapters.find({}, { sort: { chapter: 1 } });
 	}
 });
 
@@ -18,14 +28,58 @@ Template.pageChapter.helpers({
 
 Template.chapter.helpers({
 	pages: function() {
-		return Pages.find({ chapter: this.chapter });
+		return Pages.find({ chapter: this.chapter }, sort);
 	}
 });
 
 Template.page.helpers({
 	file: function() {
-		console.log(this);
 		return Images.findOne(this.fileId);
+	}
+});
+
+Template.editPage.helpers({
+	file: function() {
+		return Images.findOne(this.fileId);
+	}
+});
+
+var findAdjacent = function(c, p, dir) {
+	dir = dir || 1;
+	var pages = Pages.find({}, sort).fetch();
+	var adj;
+	pages.forEach(function(page, i) {
+		if(page.chapter === c && page.page === p) {
+			adj = pages[i+dir];
+			return;
+		}
+	});
+	return adj;
+};
+Template.arrows.helpers({
+	notFirst: function() {
+		return this._id !== Pages.find({}, sort).fetch()[0]._id;
+	},
+	notLast: function() {
+		return this._id !== Pages.find({}, sort).fetch().reverse()[0]._id;
+	},
+	first: function() {
+		return Pages.find({}, sort).fetch()[0];
+	},
+	previous: function() {
+		return findAdjacent(this.chapter, this.page, -1);
+	},
+	next: function() {
+		return findAdjacent(this.chapter, this.page, 1);
+	},
+	last: function() {
+		return Pages.find({}, sort).fetch().reverse()[0];
+	}
+});
+
+Template.submit.helpers({
+	isChapters: function() {
+		return Chapters.find().count() > 0;
 	}
 });
 
@@ -62,12 +116,19 @@ Template.submitChapter.events({
 		var title = t.find('[name=title]').val();
 
 		if(!title) { // client side erorr checks
-			Errors.throw("Chapter needs a title.");
+			Errors.throw("New chapter needs a title.");
+			return;
+		}
+
+		var chapterNumber = parseInt(t.find('[name=chapter]').val(), 10);
+
+		if(!chapterNumber) {
+			Errors.throw("New chapter needs a number.");
 			return;
 		}
 
 		var chapter = {
-			chapter: parseInt(t.find('[name=chapter]').val(), 10),
+			chapter: chapterNumber,
 			title: title
 		};
 
@@ -83,11 +144,6 @@ Template.submitChapter.events({
 Template.submitPage.helpers({
 	chapters: function() {
 		return Chapters.find({}, { sort: { chapter: -1 }, fields: { chapter: 1, title: 1 } });
-	},
-	file: function() {
-		console.log("session thing")
-		if(!Session.equals("uploadId", null))
-			return Images.findOne(Session.get("uploadId"));
 	}
 });
 
@@ -98,7 +154,13 @@ Template.submitPage.events({
 		var t = $(e.target);
 
 		var c = t.find('[name=chapter]').val();
-		c = c.replace(/[^0-9]/g, '');
+
+		if(!c) {
+			Errors.throw("New page needs a chapter number.");
+			return;
+		}
+
+		c = c.match(/^\d+/)[0];
 		c = parseInt(c, 10);
 
 		var file = t.find('[name=file]')[0].files[0];
@@ -110,9 +172,10 @@ Template.submitPage.events({
 
 		var fileId = Images.storeFile(file);
 
-		if(!fileId)
+		if(!fileId) {
 			Errors.throw("Problem uploading image :(");
-		else
+			return;
+		} else
 			Errors.throw("Uploading image.", "info");
 
 		Session.set("uploadId", fileId);
@@ -137,11 +200,9 @@ Template.submitPage.events({
 				Meteor.call('page', page, function(error, r) {
 					Session.set("uploadId", null);
 					if(error) {
-						if(error.error === 400)
-							Errors.throw("One of the fields wasn't the correct type, hax0r?");
-						else
-							Errors.throw(error.reason);
-					} else {}
+						Errors.throw(error.reason);
+						Images.remove(fileId);
+					} else
 						Router.go('page', { chapter: r.chapter, page: r.page });
 				});
 			}
@@ -150,15 +211,206 @@ Template.submitPage.events({
 	}
 });
 
+Template.edit.created = function() {
+	// set up defaults if new session or use url, changes UI
+	var params = Router.current().params;
+	var firstChapter = Chapters.find({}, {sort: {chapter: 1}}).fetch()[0].chapter;
+	var c = parseInt(params.chapter, 10) || firstChapter;
+	var p = parseInt(params.page, 10) || 'cover';
+
+	Session.set('editChapter', c);
+	Session.set('editPage', p);
+
+	// only able to use val() to match an option, so need title
+	var full = c + " - " + Chapters.findOne({chapter: c}).title;
+
+	Meteor.defer(function() {
+		$('select[name=chapter]').val(full);
+		$('select[name=page]').val(p);
+	});
+};
+
+Template.edit.helpers({
+	selectChapters: function() {
+		return Chapters.find({}, { sort: { chapter: 1 }, fields: { chapter: 1, title: 1 } });
+	},
+	selectPages: function() {
+		return Pages.find({ chapter: Session.get('editChapter') }, {
+			sort: { page: 1 },
+			fields: { page: 1, fileId: 1 }
+		});
+	}
+});
+
+Template.edit.events({
+	'change select[name=chapter]': function(e) {
+		var c = $(e.target).val();
+
+		if(!c) { return; }
+
+		c = c.match(/^\d+/)[0];
+		c = parseInt(c, 10);
+
+		Session.set('editChapter', c);
+		Session.set('editPage', 'cover');
+		$('select[name=page]').val('cover');
+		
+		Router.go('edit', {
+			chapter: Session.get('editChapter'),
+			page: Session.get('editPage')
+		});
+	},
+	'change select[name=page]': function(e) {
+		var p = $(e.target).val();
+
+		if(!p) { return; }
+		
+		Session.set('editPage', p);
+
+		Router.go('edit', {
+			chapter: Session.get('editChapter'),
+			page: Session.get('editPage')
+		});
+	}
+});
+
+Template.editChapter.rendered = function() {
+	$('.editable').editable();
+};
+
+Template.editChapter.events({
+	'click #btn-update': function(e) {
+		var title = $('span[name=title]').text();
+		console.log(title);
+
+		if(!title) {
+			Errors.throw("Chapter needs a title.");
+			return;
+		}
+
+		var chapter = {
+			title: title,
+			chapter: Session.get('editChapter')
+		};
+
+		Meteor.call('updateChapter', chapter, function(error, result) {
+			if(error)
+				Errors.throw(error.reason);
+			else
+				Router.go('chapter', { chapter: result });
+		});
+	},
+	'click #btn-remove': function(e) {
+		$('#confirm-modal').modal({
+			backdrop: false
+		});
+	},
+	'click #confirm-remove': function(e) {
+		var c = Session.get('editChapter');
+		Meteor.call('deleteChapter', c, function(error) {
+			if(error)
+				Errors.throw(error.reason);
+			else {
+				Errors.throw("Chapter " + c + " and its pages removed.", "info");
+				Router.go('edit');
+			}
+		});
+	}
+});
+
+Template.editPage.events({
+	'click #btn-update': function(e) {
+		var files = $('#file-input')[0].files;
+
+		if(files.length === 0) // no change to image
+			return;
+
+		var file = files[0];
+		var fileId = Images.storeFile(file);
+
+		if(!fileId) {
+			Errors.throw("Problem uploading image :(");
+			return;
+		} else
+			Errors.throw("Uploading image.", "info");
+
+		Session.set("uploadId", fileId);
+
+		var page = {
+			chapter: parseInt(Session.get('editChapter'), 10),
+			page: parseInt(Session.get('editPage'), 10),
+			type: file.type,
+			fileId: fileId
+		};
+
+		var image;
+		var timer = Meteor.setInterval(function() {
+			image = Images.findOne(fileId);
+
+			if(image && image.complete) {
+				Meteor.clearTimeout(timer);
+				Meteor.call('updatePage', page, function(error, r) {
+					Session.set("uploadId", null);
+					if(error) {
+						Errors.throw(error.reason);
+						Images.remove(fileId);
+					} else
+						Router.go('page', { chapter: r.chapter, page: r.page });
+				});
+			}
+		}, 1000);
+	},
+	'click #btn-remove': function(e) {
+		$('#confirm-modal').modal({
+			backdrop: false
+		});
+	},
+	'click #confirm-remove': function(e) {
+		var c = Session.get('editChapter');
+		var p = parseInt(Session.get('editPage'), 10);
+
+		if(p === 'cover') return;
+
+		Meteor.call('deletePage', c, p, function(error) {
+			if(error)
+				Errors.throw(error.reason);
+			else {
+				Errors.throw("Chapter " + c + " Page " + p + " removed.", "info");
+				Router.go('edit', { chapter: c });
+			}
+		});
+	},
+	'change input[type=file]': function(e) {
+		var file = (e.target.files || e.dataTransfer.files)[0];
+
+		if(!file || !isImage(file.type)) { // client side error checks
+			Errors.throw("New image needs to be an image.");
+			return;
+		}
+
+		var reader = new FileReader();
+		reader.onload = function(e) {
+			$(".editImage").attr('src', e.target.result);
+		};
+
+		reader.readAsDataURL(file);
+	}
+});
+
+Handlebars.registerHelper('getProgressFile', function() {
+	if(!Session.equals("uploadId", null))
+		return Images.findOne(Session.get("uploadId"));
+});
+
 Handlebars.registerHelper('pluralize', function(n, thing) {
 	if(n === 1) return '1 ' + thing;
 	else return n + ' ' + thing + 's';
 });
 
 Handlebars.registerHelper('debug', function() {
-	console.log("Current Context");
-    console.log("====================");
+    console.log("vvv==============vvv");
     console.log(this);
+    console.log("^^^==============^^^");
 });
 
 Handlebars.registerHelper('isAdmin', function() {

@@ -1,10 +1,13 @@
 {
   "packages": {
     "iron-router": {},
-    "accounts-ui-bootstrap-dropdown": {},
     "spin": {},
     "moment": {},
     "collectionFS": {},
-    "imagemagick": {}
+    "imagemagick": {},
+    "bootstrap-3": {},
+    "accounts-ui-bootstrap-3": {},
+    "font-awesome-4": {},
+    "x-editable-bootstrap3": {}
   }
 }
