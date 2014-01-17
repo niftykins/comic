@@ -20,27 +20,9 @@ Template.archive.helpers({
 	}
 });
 
-Template.pageChapter.helpers({
-	file: function() {
-		return Images.findOne(this.fileId);
-	}
-});
-
 Template.chapter.helpers({
 	pages: function() {
 		return Pages.find({ chapter: this.chapter }, sort);
-	}
-});
-
-Template.page.helpers({
-	file: function() {
-		return Images.findOne(this.fileId);
-	}
-});
-
-Template.editPage.helpers({
-	file: function() {
-		return Images.findOne(this.fileId);
 	}
 });
 
@@ -186,12 +168,8 @@ Template.submitPage.events({
 			fileId: fileId
 		};
 
-		console.log(page);
-
 		var image;
-
 		var timer = Meteor.setInterval(function() {
-			console.log('timer');
 			image = Images.findOne(fileId);
 
 			if(image && image.complete) {
@@ -208,6 +186,63 @@ Template.submitPage.events({
 			}
 		}, 1000);
 
+	}
+});
+
+Template.submitSilly.events({
+	'submit form': function(e) {
+		e.preventDefault();
+		Errors.cleanAll(); // remove previous form errors
+		var t = $(e.target);
+
+		var title = t.find('[name=title]').val();
+
+		if(!title) { // client side erorr checks
+			Errors.throw("New chapter needs a title.");
+			return;
+		}
+
+		var file = t.find('[name=file]')[0].files[0];
+
+		if(!file || !isImage(file.type)) { // client side error checks
+			Errors.throw("Silly needs to be an image.");
+			return;
+		}
+
+		var fileId = Images.storeFile(file);
+
+		if(!fileId) {
+			Errors.throw("Problem uploading image :(");
+			return;
+		} else
+			Errors.throw("Uploading image.", "info");
+
+		Session.set("uploadId", fileId);
+
+		var silly = {
+			title: title,
+			type: file.type,
+			fileId: fileId
+		};
+
+		console.log(silly);
+
+		var image;
+		var timer = Meteor.setInterval(function() {
+			image = Images.findOne(fileId);
+
+			if(image && image.complete) {
+				Meteor.clearTimeout(timer);
+				Meteor.call('silly', silly, function(error, r) {
+					Session.set("uploadId", null);
+					if(error) {
+						Errors.throw(error.reason);
+						Images.remove(fileId);
+					} else
+						Router.go('sillies', { number: r });
+				});
+			}
+		}, 1000);
 	}
 });
 
@@ -239,6 +274,9 @@ Template.edit.helpers({
 			sort: { page: 1 },
 			fields: { page: 1, fileId: 1 }
 		});
+	},
+	isSillies: function() {
+		return Sillies.find().count() > 0;
 	}
 });
 
@@ -248,7 +286,6 @@ Template.edit.events({
 
 		if(!c) { return; }
 
-		c = c.match(/^\d+/)[0];
 		c = parseInt(c, 10);
 
 		Session.set('editChapter', c);
@@ -318,6 +355,10 @@ Template.editChapter.events({
 	}
 });
 
+Template.editPage.rendered = function() {
+	this.originalURL = $('.editImage').attr('src');
+};
+
 Template.editPage.events({
 	'click #btn-update': function(e) {
 		var files = $('#file-input')[0].files;
@@ -380,11 +421,14 @@ Template.editPage.events({
 			}
 		});
 	},
-	'change input[type=file]': function(e) {
+	'change input[type=file]': function(e, template) {
 		var file = (e.target.files || e.dataTransfer.files)[0];
 
-		if(!file || !isImage(file.type)) { // client side error checks
+		if(file && !isImage(file.type)) { // client side error checks
 			Errors.throw("New image needs to be an image.");
+			return;
+		} else if(!file) {
+			$(".editImage").attr('src', template.originalURL);
 			return;
 		}
 
@@ -395,6 +439,107 @@ Template.editPage.events({
 
 		reader.readAsDataURL(file);
 	}
+});
+
+Template.editSilly.rendered = function() {
+	$('.editable').editable();
+	this.originalURL = $('.editImage').attr('src');
+};
+
+Template.editSilly.events({
+	'click #btn-update': function(e) {
+		var updateCall = function(thing) {
+			Meteor.call('updateSilly', thing, function(error, result) {
+				if(error)
+					Errors.throw(error.reason);
+				else
+					Router.go('sillies', {number: result});
+			});
+		};
+
+		var wait = false;
+		var silly = {
+			number: this.number,
+		};
+
+		var $title = $('span[name=title]');
+		if($title.hasClass("editable-unsaved")) {
+			_.extend(silly, {
+				title: $title.text()
+			});
+		}
+			
+		var files = $('#file-input')[0].files;
+		var fileId;
+		if(files.length !== 0) {
+			var file = files[0];
+			fileId = Images.storeFile(file);
+
+			if(!fileId) {
+				Errors.throw("Problem uploading image :(");
+				return;
+			} else {
+				Session.set("uploadId", fileId);
+				wait = true;
+				Errors.throw("Uploading image.", "info");
+				_.extend(silly, {
+					type: file.type,
+					fileId: fileId
+				});
+			}
+		}
+
+		if(wait && fileId) {
+			var image;
+			var timer = Meteor.setInterval(function() {
+				image = Images.findOne(fileId);
+				if(image && image.complete) {
+					Meteor.clearTimeout(timer);
+					updateCall(silly);
+				}
+			}, 1000);
+		} else {
+			updateCall(silly);
+		}
+	},
+	'click #btn-remove': function(e) {
+		$('#confirm-modal').modal({
+			backdrop: false
+		});
+	},
+	'click #confirm-remove': function(e) {
+		var n = this.number;
+		Meteor.call('deleteSilly', n, function(error) {
+			if(error)
+				Errors.throw(error.reason);
+			else {
+				Errors.throw("Silly " + n + " removed.", "info");
+				Router.go('sillies');
+			}
+		});
+	},
+	'change input[type=file]': function(e, template) {
+		var file = (e.target.files || e.dataTransfer.files)[0];
+
+		if(file && !isImage(file.type)) { // client side error checks
+			Errors.throw("New image needs to be an image.");
+			return;
+		} else if(!file) {
+			$(".editImage").attr('src', template.originalURL);
+			return;
+		}
+
+		var reader = new FileReader();
+		reader.onload = function(e) {
+			$(".editImage").attr('src', e.target.result);
+		};
+
+		reader.readAsDataURL(file);
+	}
+});
+
+Handlebars.registerHelper('getFile', function() {
+	return Images.findOne(this.fileId);
 });
 
 Handlebars.registerHelper('getProgressFile', function() {

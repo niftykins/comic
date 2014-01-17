@@ -30,7 +30,7 @@ img {
 	margin-top: 10px;
 }
 
-.edit .options {
+.edit .options select {
 	margin-bottom: 15px;
 }
 
@@ -45,6 +45,3 @@ img {
 	cursor: pointer;
 }
 
-select {
-	font-size: 18px;
-}

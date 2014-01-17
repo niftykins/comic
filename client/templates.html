@@ -31,6 +31,7 @@
 			<ul class="nav navbar-nav">
 				<li class="{{active 'home'}}"><a href="{{pathFor 'home'}}">Latest</a></li>
 				<li class="{{active 'archive'}}"><a href="{{pathFor 'archive'}}">Archive</a></li>
+				<li class="{{active 'sillies'}}"><a href="/sillies">Sillies</a></li>
 				{{#if isAdmin}}
 					<li class="{{active 'submit'}}"><a href="{{pathFor 'submit'}}">Submit</a></li>
 					<li class="{{active 'edit'}}"><a href="{{pathFor 'edit'}}">Edit</a></li>
@@ -110,7 +111,7 @@
 <template name="pageChapter">
 	<div class="pageChapter">
 		<a href="{{pathFor 'page'}}">
-			{{page}} <img src='{{cfsFileUrl "thumb" file=file}}'>
+			{{page}} <img src='{{cfsFileUrl "thumb" file=getFile}}'>
 		</a>
 	</div>
 </template>
@@ -123,7 +124,7 @@
 		<p>By {{author}}</p>
 		<P>{{timeAgo posted}}</P>
 		{{> arrows}}
-		<img src='{{cfsFileUrl "default" file=file}}'>
+		<img src='{{cfsFileUrl "default" file=getFile}}'>
 	</div>
 </template>
 
@@ -153,16 +154,46 @@
 	</div>
 </template>
 
+<template name="sillies">
+	<div class="sillies well">
+		<h3>Sillies</h3>
+		{{#each sillies}}
+			<div class="silly-little">
+				<a href="{{pathFor 'sillies'}}">
+					{{number}} <img src='{{cfsFileUrl "thumb" file=getFile}}'>
+				</a>
+			</div>
+		{{/each}}
+	</div>
+</template>
+
+<template name="silly">
+	<div class="page well">
+		{{#if isAdmin}}
+			<div class="edit-buttons pull-right">
+				<a href="{{pathFor 'editSilly'}}" class="btn btn-primary">Edit</a>
+			</div>
+		{{/if}}
+
+		<h3>Silly {{number}}: {{title}}</h3>
+		<p>By {{author}}</p>
+		<P>{{timeAgo posted}}</P>
+		<img src='{{cfsFileUrl "default" file=getFile}}'>
+	</div>
+</template>
+
 <template name="submit">
 	{{> submitChapter}}
 	<br>
 	{{#if isChapters}}
 		{{> submitPage}}
 	{{/if}}
+	<br>
+	{{> submitSilly}}
 </template>
 
 <template name="submitChapter">
-	<form class="submit-new form-horizontal" id="submit-page">
+	<form class="well submit-new form-horizontal" id="submit-page">
 		<div class="form-group">
 			<label class="form-label" for="chapter">New chapter</label>
 			<select name="chapter" class="form-control">
@@ -181,7 +212,7 @@
 </template>
 
 <template name="submitPage">
-	<form class="submit-new form-horizontal" id="submit-page">
+	<form class="well submit-new form-horizontal" id="submit-page">
 		<div class="form-group">
 			<label class="form-label" for="chapter">For chapter</label>
 			<select name="chapter" class="form-control">
@@ -202,17 +233,35 @@
 	{{> progressBar}}
 </template>
 
+<template name="submitSilly">
+	<form class="well submit-new form-horizontal" id="submit-silly">
+		<div class="form-group">
+			<input name="title" type="text" value="" class="form-control" placeholder="silly title">
+		</div>
+
+		<div class="form-group">
+			<label for="file">Silly Image</label>
+			<input type="file" name="file">
+		</div>
+
+		<div class="form-group">
+			<input type="submit" value="Submit" class="btn btn-primary">
+		</div>
+	</form>
+
+	{{> progressBar}}
+</template>
+
 <template name="edit">
-	{{debug}}
 	<div class="edit">
 		<div class="options">
-			<select name="chapter">
-				{{#each selectChapters}}<option>{{chapter}} - {{title}}</option>{{/each}}
+			<select name="chapter" class="form-control">
+				{{#each selectChapters}}<option value="{{chapter}}">{{chapter}} - {{title}}</option>{{/each}}
 			</select>
 
-			<select name="page">
+			<select name="page" class="form-control">
 				<option>cover</option>
-				{{#each selectPages}}<option>{{page}}</option>{{/each}}
+				{{#each selectPages}}<option value="{{page}}">{{page}}</option>{{/each}}
 			</select>
 		</div>
 
@@ -237,8 +286,8 @@
 		<div class="new-image">
 			<label for="file-input">
 				<div class="wrap">
-					<p class="small text-center">Click to change</p>
-					<img class="editImage" src='{{cfsFileUrl "default" file=file}}'>
+					<p class="small text-center">click to change</p>
+					<img class="editImage" src='{{cfsFileUrl "default" file=getFile}}'>
 				</div>
 			</label>
 
@@ -287,6 +336,50 @@
 				</div>
 				<div class="modal-body">
 					<p>Are you sure you want to remove Chapter {{chapter}} and all of its pages?</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					<button type="button" id="confirm-remove" class="btn btn-danger">Remove</button>
+				</div>
+			</div>
+		</dic>
+	</div>
+</template>
+
+<template name="editSilly">
+	<div class="silly well">
+		{{> progressBar}}
+
+		<div class="edit-buttons pull-right">
+			<div id="btn-remove" class="unselectable btn btn-danger">Remove</div>
+			<div id="btn-update" class="btn btn-primary">Update</div>
+		</div>
+
+		<h3>Edit Silly {{number}}: <span name="title" class="editable" data-type='text'>{{title}}</span></h3>
+		<p>By {{author}}</p>
+		<P>{{timeAgo posted}}</P>
+
+		<div class="new-image">
+			<label for="file-input">
+				<div class="wrap">
+					<p class="small text-center">click to change</p>
+					<img class="editImage" src='{{cfsFileUrl "default" file=getFile}}'>
+				</div>
+			</label>
+
+			<input id="file-input" type="file">
+		</div>
+	</div>
+
+	<div id="confirm-modal" class="modal fade" tabindex="-1">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					<h4 class="modal-title">Remove</h4>
+				</div>
+				<div class="modal-body">
+					<p>Are you sure you want to remove silly: {{number}} - {{title}}?</p>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>

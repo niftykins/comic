@@ -1,5 +1,6 @@
 Chapters = new Meteor.Collection('chapters');
 Pages = new Meteor.Collection('pages');
+Sillies = new Meteor.Collection('sillies');
 
 Images = new CollectionFS('images', {autopublish: false});
 
@@ -75,8 +76,10 @@ Meteor.methods({
 		if(!chapter) // no chapter
 			throw new Meteor.Error(422, "Chapter doesn't exist.");
 
-		if(!isImage(attrs.type))
+		if(!isImage(attrs.type)) {
+			Images.remove(attrs.fileId);
 			throw new Meteor.Error(422, "New page needs an image.");
+		}
 
 		if(!attrs.fileId)
 			throw new Meteor.Error(422, "Pretty sure your image upload broke.");
@@ -149,8 +152,10 @@ Meteor.methods({
 		if(!page) // no page
 			throw new Meteor.Error(422, "Page doesn't exist.");
 
-		if(!isImage(attrs.type))
+		if(!isImage(attrs.type)) {
+			Images.remove(attrs.fileId);
 			throw new Meteor.Error(422, "New page needs an image.");
+		}
 
 		if(!attrs.fileId)
 			throw new Meteor.Error(422, "Pretty sure your image upload broke.");
@@ -261,5 +266,103 @@ Meteor.methods({
 				multi: true
 			});
 		}
+	}
+});
+
+// sillies
+Meteor.methods({
+	silly: function(attrs) {
+		check(attrs, {
+			title: String,
+			type: String,
+			fileId: String
+		});
+
+		var user = Meteor.user();
+		
+		checkUser();
+
+		if(!attrs.title) // not empty string
+			throw new Meteor.Error(422, "Silly needs a title.");
+
+		if(!isImage(attrs.type)) {
+			Images.remove(attrs.fileId);
+			throw new Meteor.Error(422, "New page needs an image.");
+		}
+
+		if(!attrs.fileId)
+			throw new Meteor.Error(422, "Pretty sure your image upload broke.");
+
+		var sillies = Sillies.find({}, {sort: {posted: -1}});
+
+		var nextSilly;
+		if(sillies.count() === 0)
+			nextSilly = 1;
+		else
+			nextSilly = sillies.fetch()[0].number + 1;
+
+		var silly = {
+			authorId: user._id,
+			author: user.username,
+			number: nextSilly,
+			posted: new Date().getTime(),
+			fileId: attrs.fileId,
+			title: attrs.title
+		};
+
+		Sillies.insert(silly);
+
+		return nextSilly;
+	},
+	updateSilly: function(attrs) {
+		check(attrs, {
+			number: Match.Integer,
+			title: Match.Optional(String),
+			type: Match.Optional(String),
+			fileId: Match.Optional(String)
+		});
+
+		checkUser();
+
+		var silly = Sillies.findOne({number: attrs.number});
+
+		if(!silly)
+			throw new Meteor.Error(422, "Silly doesn't exist.");
+
+		if(attrs.fileId && !isImage(attrs.type)) {
+			Images.remove(attrs.fileId);
+			throw new Meteor.Error(422, "New page needs an image.");
+		}
+
+		if(attrs.fileId === '')
+			throw new Meteor.Error(422, "Pretty sure your image upload broke.");
+
+		if(attrs.fileId)
+			Images.remove(silly.fileId);
+
+		Sillies.update({
+			number: attrs.number
+		}, {
+			$set: {
+				fileId: attrs.fileId || silly.fileId,
+				title: attrs.title || silly.title,
+				updated: new Date().getTime()
+			}
+		});
+
+		return attrs.number;
+	},
+	deleteSilly: function(number) {
+		check(number, Match.Integer);
+
+		checkUser();
+
+		var silly = Sillies.findOne({number: number});
+
+		if(!silly)
+			throw new Meteor.Error(404, "Silly " + number + " doesn't exist.");
+
+		Images.remove(silly.fileId);
+		Sillies.remove(silly._id);
 	}
 });
