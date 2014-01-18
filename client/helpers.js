@@ -59,6 +59,39 @@ Template.arrows.helpers({
 	}
 });
 
+var findAdjacentSilly = function(n, dir) {
+	dir = dir || 1;
+	var sillies = Sillies.find({}, sort).fetch();
+	var adj;
+	sillies.forEach(function(silly, i) {
+		if(silly.number === n) {
+			adj = sillies[i+dir];
+			return;
+		}
+	});
+	return adj;
+};
+Template.sillyArrows.helpers({
+	notFirst: function() {
+		return this._id !== Sillies.find({}, {sort: {posted: 1}}).fetch()[0]._id;
+	},
+	notLast: function() {
+		return this._id !== Sillies.find({}, {sort: {posted: -1}}).fetch()[0]._id;
+	},
+	first: function() {
+		return Sillies.find({}, {sort: {posted: 1}}).fetch()[0];
+	},
+	previous: function() {
+		return findAdjacentSilly(this.number, -1);
+	},
+	next: function() {
+		return findAdjacentSilly(this.number, 1);
+	},
+	last: function() {
+		return Sillies.find({}, {sort: {posted: -1}}).fetch()[0];
+	}
+});
+
 Template.submit.helpers({
 	isChapters: function() {
 		return Chapters.find().count() > 0;

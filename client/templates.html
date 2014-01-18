@@ -154,6 +154,32 @@
 	</div>
 </template>
 
+<template name="sillyArrows">
+	<div class="arrows unselectable">
+		{{#if notFirst}}
+			{{#with first}}
+				<a href="{{pathFor 'sillies'}}"><i class="fa fa-3x fa-angle-double-left"></i></a>
+			{{/with}}
+
+			{{#with previous}}
+				<a href="{{pathFor 'sillies'}}"><i class="fa fa-3x fa-angle-left"></i></a>
+			{{/with}}
+		{{/if}}
+
+		<a href="/sillies" class="btn btn-default">Archive</a>
+
+		{{#if notLast}}
+			{{#with next}}
+				<a href="{{pathFor 'sillies'}}"><i class="fa fa-3x fa-angle-right"></i></a>
+			{{/with}}
+
+			{{#with last}}
+				<a href="{{pathFor 'sillies'}}"><i class="fa fa-3x fa-angle-double-right"></i></a>
+			{{/with}}
+		{{/if}}
+	</div>
+</template>
+
 <template name="sillies">
 	<div class="sillies well">
 		<h3>Sillies</h3>
@@ -178,6 +204,8 @@
 		<h3>Silly {{number}}: {{title}}</h3>
 		<p>By {{author}}</p>
 		<P>{{timeAgo posted}}</P>
+		{{> sillyArrows}}
+		
 		<img src='{{cfsFileUrl "default" file=getFile}}'>
 	</div>
 </template>
