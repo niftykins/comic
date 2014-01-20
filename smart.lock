@@ -28,6 +28,12 @@
       },
       "x-editable-bootstrap3": {
         "version": "1.5.2"
+      },
+      "winston": {
+        "version": "0.0.3"
+      },
+      "winston-loggly": {
+        "version": "0.0.3"
       }
     },
     "packages": {
@@ -75,6 +81,16 @@
         "git": "https://github.com/JustinSGray/meteor-x-editable-bootstrap.git",
         "tag": "v1.5.2",
         "commit": "1e5e6d7bddf0b17cc6ea2fc1f50c3f9fd2cfc3f3"
+      },
+      "winston": {
+        "git": "https://github.com/tomrogers3/meteor-winston.git",
+        "tag": "v0.0.3",
+        "commit": "60dc02303ca003ef05254f94fbb9bfd40915d5d3"
+      },
+      "winston-loggly": {
+        "git": "https://github.com/tomrogers3/meteor-winston-loggly.git",
+        "tag": "v0.0.3",
+        "commit": "87ac23ce1134d778d53a3b99350921f9eb15358c"
       },
       "cfs-public-folder": {
         "git": "https://github.com/nooitaf/meteor-cfs-public-folder.git",

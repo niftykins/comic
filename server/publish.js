@@ -1,5 +1,5 @@
 Meteor.publish('pages', function() {
-	return Pages.find({}, {sort: {page: 1}});
+	return Pages.find({}, {sort: { sort: ["chapter", "page"] }});
 });
 
 Meteor.publish('chapters', function() {
@@ -8,6 +8,10 @@ Meteor.publish('chapters', function() {
 
 Meteor.publish('sillies', function() {
 	return Sillies.find({}, {sort: {posted: 1}});
+});
+
+Meteor.publish('news', function() {
+	return News.find({}, {sort: {posted: 1}});
 });
 
 //push admin field
@@ -35,12 +39,17 @@ var handles = {
 		Imagemagick.resize({
 			srcData: options.blob,
 			dstPath: destination.serverFilename,
-			quality: 0.2,
+			quality: 0.7,
 			width: 140
 		});
 
-		console.log("Writing thumb", destination.fileData.url);
 		return destination.fileData;
+	},
+	callback: function(options, cb, params) {
+		if(cb) {
+			console.log('image callback attempt');
+			cb.apply(this, params);
+		}
 	}
 };
 

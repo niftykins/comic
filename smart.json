@@ -8,6 +8,8 @@
     "bootstrap-3": {},
     "accounts-ui-bootstrap-3": {},
     "font-awesome-4": {},
-    "x-editable-bootstrap3": {}
+    "x-editable-bootstrap3": {},
+    "winston": {},
+    "winston-loggly": {}
   }
 }

@@ -14,6 +14,58 @@ Template.header.helpers({
 	}
 });
 
+Session.setDefault('skipNews', 0);
+Template.newsFeed.helpers({
+	news: function() {
+		return News.find({}, {
+			sort: {posted: -1},
+			limit: 3,
+			skip: Session.get('skipNews') || 0
+		});
+	},
+	notFirst: function() {
+		return !Session.equals('skipNews', 0);
+	},
+	notLast: function() {
+		var max = News.find().count() - 3;
+		return !Session.equals('skipNews', max);
+	}
+});
+
+Template.sillyHighlight.helpers({
+	silly: function() {
+		return Sillies.find({}, {sort: {posted: -1}}).fetch()[0];
+	}
+});
+
+Template.newsFeed.events({
+	'click #news-up': function() {
+		var old = Session.get('skipNews');
+		Session.set('skipNews', old - 1);
+	},
+	'click #news-down': function() {
+		var old = Session.get('skipNews');
+		Session.set('skipNews', old + 1);
+	}
+});
+
+Template.newsPost.events({
+	'click #btn-remove': function(e) {
+		$('#confirm-modal').modal({
+			backdrop: false
+		});
+	},
+	'click #confirm-remove': function(e) {
+		Meteor.call('deleteNews', this._id, function(error) {
+			Errors.clearAll();
+			if(error)
+				Errors.throw(error.reason);
+			else
+				Errors.throw("News item removed.", "info");
+		});
+	}
+});
+
 Template.archive.helpers({
 	chapters: function() {
 		return Chapters.find({}, { sort: { chapter: 1 } });
@@ -22,7 +74,9 @@ Template.archive.helpers({
 
 Template.chapter.helpers({
 	pages: function() {
-		return Pages.find({ chapter: this.chapter }, sort);
+		return Pages.find({ chapter: this.chapter }, {
+			sort: ['chapter', 'page']
+		});
 	}
 });
 
@@ -142,17 +196,42 @@ Template.submitChapter.events({
 			return;
 		}
 
+		var file = t.find('[name=file]')[0].files[0];
+
+		if(!file || !isImage(file.type)) { // client side error checks
+			Errors.throw("New chapter cover needs an image.");
+			return;
+		}
+
+		var fileId = Images.storeFile(file);
+
+		if(!fileId) {
+			Errors.throw("Problem uploading image :(");
+			return;
+		} else
+			Errors.throw("Uploading image.", "info");
+
 		var chapter = {
 			chapter: chapterNumber,
-			title: title
+			title: title,
+			type: file.type,
+			fileId: fileId
 		};
 
-		Meteor.call('chapter', chapter, function(error, c) {
-			if(error) {
-				Errors.throw(error.reason);
-			} else
-				Router.go('chapter', { chapter: c });
-		});
+		var image;
+		var timer = Meteor.setInterval(function() {
+			image = Images.findOne(fileId);
+
+			if(image && image.complete) {
+				Meteor.clearTimeout(timer);
+				Meteor.call('chapter', chapter, function(error, c) {
+					if(error) {
+						Errors.throw(error.reason);
+					} else
+						Router.go('chapter', { chapter: c });
+				});
+			}
+		}, 1000);
 	}
 });
 
@@ -201,12 +280,14 @@ Template.submitPage.events({
 			fileId: fileId
 		};
 
+		var test = Images.findOne(fileId);
+		console.log(test);
+
 		var image;
 		var timer = Meteor.setInterval(function() {
 			image = Images.findOne(fileId);
 
 			if(image && image.complete) {
-				console.log('complete');
 				Meteor.clearTimeout(timer);
 				Meteor.call('page', page, function(error, r) {
 					Session.set("uploadId", null);
@@ -218,7 +299,6 @@ Template.submitPage.events({
 				});
 			}
 		}, 1000);
-
 	}
 });
 
@@ -231,7 +311,7 @@ Template.submitSilly.events({
 		var title = t.find('[name=title]').val();
 
 		if(!title) { // client side erorr checks
-			Errors.throw("New chapter needs a title.");
+			Errors.throw("New silly needs a title.");
 			return;
 		}
 
@@ -258,8 +338,6 @@ Template.submitSilly.events({
 			fileId: fileId
 		};
 
-		console.log(silly);
-
 		var image;
 		var timer = Meteor.setInterval(function() {
 			image = Images.findOne(fileId);
@@ -276,6 +354,32 @@ Template.submitSilly.events({
 				});
 			}
 		}, 1000);
+	}
+});
+
+Template.submitNews.events({
+	'submit form': function(e) {
+		e.preventDefault();
+		Errors.cleanAll(); // remove previous form errors
+		var t = $(e.target);
+
+		var content = t.find('[name=content]').val();
+
+		if(!content) { // client side erorr checks
+			Errors.throw("New news needs content.");
+			return;
+		}
+
+		var news = {
+			content: content
+		};
+
+		Meteor.call('news', news, function(error) {
+			if(error)
+				Errors.throw(error.reason);
+			else
+				Router.go('news');
+		});
 	}
 });
 
@@ -350,25 +454,55 @@ Template.editChapter.rendered = function() {
 
 Template.editChapter.events({
 	'click #btn-update': function(e) {
-		var title = $('span[name=title]').text();
-		console.log(title);
+		var updateCall = function(thing) {
+			Meteor.call('updateChapter', thing, function(error, result) {
+				if(error)
+					Errors.throw(error.reason);
+				else
+					Router.go('chapter', { chapter: result });
+			});
+		};
 
-		if(!title) {
-			Errors.throw("Chapter needs a title.");
-			return;
-		}
-
+		var wait = false;
 		var chapter = {
-			title: title,
 			chapter: Session.get('editChapter')
 		};
 
-		Meteor.call('updateChapter', chapter, function(error, result) {
-			if(error)
-				Errors.throw(error.reason);
-			else
-				Router.go('chapter', { chapter: result });
-		});
+		var $title = $('span[name=title]');
+		if($title.hasClass("editable-unsaved")) {
+				chapter.title = $title.text();
+		}
+
+		var files = $('#file-input')[0].files;
+		var fileId;
+		if(files.length !== 0) {
+			var file = files[0];
+			fileId = Images.storeFile(file);
+
+			if(!fileId) {
+				Errors.throw("Problem uploading image :(");
+				return;
+			} else {
+				Session.set("uploadId", fileId);
+				wait = true;
+				Errors.throw("Uploading image.", "info");
+				chapter.type = file.type;
+				chapter.fileId = fileId;
+			}
+		}
+
+		if(wait && fileId) {
+			var image;
+			var timer = Meteor.setInterval(function() {
+				image = Images.findOne(fileId);
+				if(image && image.complete) {
+					Meteor.clearTimeout(timer);
+					updateCall(chapter);
+				}
+			}, 1000);
+		} else {
+			updateCall(chapter);
+		}
 	},
 	'click #btn-remove': function(e) {
 		$('#confirm-modal').modal({
@@ -385,6 +519,24 @@ Template.editChapter.events({
 				Router.go('edit');
 			}
 		});
+	},
+	'change input[type=file]': function(e, template) {
+		var file = (e.target.files || e.dataTransfer.files)[0];
+
+		if(file && !isImage(file.type)) { // client side error checks
+			Errors.throw("New image needs to be an image.");
+			return;
+		} else if(!file) {
+			$(".editImage").attr('src', template.originalURL);
+			return;
+		}
+
+		var reader = new FileReader();
+		reader.onload = function(e) {
+			$(".editImage").attr('src', e.target.result);
+		};
+
+		reader.readAsDataURL(file);
 	}
 });
 
@@ -597,4 +749,8 @@ Handlebars.registerHelper('isAdmin', function() {
 
 Handlebars.registerHelper('timeAgo', function(time) {
 	return moment(time).calendar();
+});
+
+Handlebars.registerHelper('newLineToBr', function(str) {
+	return str.replace(/\r?\n|\r/g, '<br>');
 });

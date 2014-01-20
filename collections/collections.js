@@ -1,6 +1,7 @@
 Chapters = new Meteor.Collection('chapters');
 Pages = new Meteor.Collection('pages');
 Sillies = new Meteor.Collection('sillies');
+News = new Meteor.Collection('news');
 
 Images = new CollectionFS('images', {autopublish: false});
 
@@ -44,6 +45,14 @@ Images.events({
 	}
 });
 
+logger = function(type, message, meta) {
+	if(Meteor.isServer) {
+		var user = Meteor.user();
+		if(user) meta.actor = user._id;
+		Winston.log(type, message, meta);
+	}
+};
+
 // repeated user checks
 var checkUser = function(user) {
 	user = user || Meteor.user();
@@ -81,26 +90,31 @@ Meteor.methods({
 			throw new Meteor.Error(422, "New page needs an image.");
 		}
 
-		if(!attrs.fileId)
+		if(!attrs.fileId) {
 			throw new Meteor.Error(422, "Pretty sure your image upload broke.");
+		}
 
 		var nextPage = chapter.pageCount + 1;
 
-		var page = _.extend(_.pick(attrs, 'chapter', 'fileId'), {
+		var page = {
 			authorId: user._id,
 			author: user.username,
 			chapterId: chapter._id,
+			chapter: attrs.chapter,
+			fileId: attrs.fileId,
 			page: nextPage,
 			posted: new Date().getTime()
-		});
+		};
 
-		var pageId = Pages.insert(page);
+		Pages.insert(page);
+
+		logger('info', 'New Page', page);
 
 		Chapters.update(chapter._id, { $inc: { pageCount: 1 } });
 
 		return {
-			chapter: attrs.chapter,
-			page: nextPage
+			chapter: page.chapter,
+			page: page.page
 		};
 	},
 	deletePage: function(c, p, renumber) {
@@ -116,7 +130,7 @@ Meteor.methods({
 		if(!page)
 			throw new Meteor.Error(404, "Ch"+c+" Pg"+p+" doesn't exist.");
 
-		console.log("Deleting Ch"+c+" Pg"+p);
+		logger('info', 'Deleting Page', page);
 
 		Images.remove(page.fileId);
 		Pages.remove(page._id);
@@ -172,6 +186,8 @@ Meteor.methods({
 			}
 		});
 
+		logger('info', 'Updating Page', page);
+
 		return {
 			chapter: attrs.chapter,
 			page: attrs.page
@@ -185,7 +201,8 @@ Meteor.methods({
 		check(attrs, {
 			chapter: Match.Integer,
 			title: String,
-			titleShort: Match.Optional(String)
+			type: String,
+			fileId: String
 		});
 
 		var user = Meteor.user();
@@ -199,42 +216,67 @@ Meteor.methods({
 		var chapter = Chapters.findOne({ chapter: attrs.chapter });
 
 		if(chapter) // already exists
-			throw new Meteor.Error(302, "Chapter already exists.", chapter.chapter);
+			throw new Meteor.Error(302, "Chapter already exists.");
 
-		var whitelist = _.pick(attrs, 'chapter', 'title', 'titleShort');
+		if(!isImage(attrs.type)) {
+			Images.remove(attrs.fileId);
+			throw new Meteor.Error(422, "Chapter cover needs to be an image.");
+		}
 
-		chapter = _.defaults(whitelist, {
+		if(!attrs.fileId) {
+			throw new Meteor.Error(422, "Pretty sure your image upload broke.");
+		}
+
+		chapter = {
 			authorId: user._id,
 			author: user.username,
+			chapter: attrs.chapter,
+			title: attrs.title,
+			fileId: attrs.fileId,
 			pageCount: 0,
 			posted: new Date().getTime(),
-			titleShort: ''
-		});
+		};
 
 		Chapters.insert(chapter);
+
+		logger('info', 'New Chapter', chapter);
 
 		return chapter.chapter;
 	},
 	updateChapter: function(attrs) {
 		check(attrs, {
-			title: String,
-			chapter: Match.Integer
+			chapter: Match.Integer,
+			title: Match.Optional(String),
+			type: Match.Optional(String),
+			fileId: Match.Optional(String)
 		});
 
 		checkUser();
 
-		if(!attrs.title)
-			throw new Meteor.Error(422, "Chapter needs a title.");
-
-		if(Chapters.find({chapter: attrs.chapter}).count() === 0)
+		var chapter = Chapters.findOne({chapter: attrs.chapter});
+		if(!chapter)
 			throw new Meteor.Error(404, "Chapter doesn't exist.");
+
+		if(attrs.fileId && !isImage(attrs.type)) {
+			Images.remove(attrs.fileId);
+			throw new Meteor.Error(422, "Chapter cover needs to be an image.");
+		}
+
+		if(attrs.fileId === '')
+			throw new Meteor.Error(422, "Pretty sure your image upload broke.");
+
+		if(attrs.fileId) // remove old one from system
+			Images.remove(chapter.fileId);
 
 		Chapters.update({chapter: attrs.chapter}, {
 			$set: {
-				title: attrs.title,
+				fileId: attrs.fileId || chapter.fileId,
+				title: attrs.title || chapter.title,
 				updated: new Date().getTime()
 			}
 		});
+
+		logger('info', 'Update Chapter', Chapters.findOne({chapter: attrs.chapter}));
 
 		return attrs.chapter;
 	},
@@ -245,7 +287,7 @@ Meteor.methods({
 
 		checkUser();
 
-		console.log("Deleting Ch"+c);
+		logger('info', 'Delete Chapter', Chapters.findOne({chapter:c}));
 
 		Chapters.remove({chapter: c});
 
@@ -312,6 +354,8 @@ Meteor.methods({
 
 		Sillies.insert(silly);
 
+		logger('info', 'New Silly', silly);
+
 		return nextSilly;
 	},
 	updateSilly: function(attrs) {
@@ -331,7 +375,7 @@ Meteor.methods({
 
 		if(attrs.fileId && !isImage(attrs.type)) {
 			Images.remove(attrs.fileId);
-			throw new Meteor.Error(422, "New page needs an image.");
+			throw new Meteor.Error(422, "Silly needs to be an image.");
 		}
 
 		if(attrs.fileId === '')
@@ -350,6 +394,8 @@ Meteor.methods({
 			}
 		});
 
+		logger('info', 'Update Silly', silly);
+
 		return attrs.number;
 	},
 	deleteSilly: function(number) {
@@ -362,7 +408,45 @@ Meteor.methods({
 		if(!silly)
 			throw new Meteor.Error(404, "Silly " + number + " doesn't exist.");
 
+		logger('info', 'Delete Silly', silly);
+
 		Images.remove(silly.fileId);
 		Sillies.remove(silly._id);
+	}
+});
+
+// news
+Meteor.methods({
+	news: function(attrs) {
+		check(attrs, {
+			content: String
+		});
+
+		var user = Meteor.user();
+		
+		checkUser();
+
+		if(!attrs.content) // not empty string
+			throw new Meteor.Error(422, "Chapter needs a title.");
+
+		var news = {
+			author: user.username,
+			authorId: user._id,
+			content: attrs.content,
+			posted: new Date().getTime()
+		};
+
+		News.insert(news);
+
+		logger('info', 'New News', news);
+	},
+	deleteNews: function(id) {
+		check(id, String);
+
+		checkUser();
+
+		logger('info', 'Delete News', News.findOne(id));
+
+		News.remove(id);
 	}
 });
