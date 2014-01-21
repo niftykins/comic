@@ -393,7 +393,6 @@ Template.edit.created = function() {
 	Session.set('editChapter', c);
 	Session.set('editPage', p);
 
-	// only able to use val() to match an option, so need title
 	var full = c + " - " + Chapters.findOne({chapter: c}).title;
 
 	Meteor.defer(function() {
@@ -407,7 +406,10 @@ Template.edit.helpers({
 		return Chapters.find({}, { sort: { chapter: 1 }, fields: { chapter: 1, title: 1 } });
 	},
 	selectPages: function() {
-		return Pages.find({ chapter: Session.get('editChapter') }, {
+		return Pages.find({
+			chapter: Session.get('editChapter'),
+			page: {$ne: 0} // hide page 0 as it's the cover page
+		}, {
 			sort: { page: 1 },
 			fields: { page: 1, fileId: 1 }
 		});
@@ -753,4 +755,8 @@ Handlebars.registerHelper('timeAgo', function(time) {
 
 Handlebars.registerHelper('newLineToBr', function(str) {
 	return str.replace(/\r?\n|\r/g, '<br>');
+});
+
+Handlebars.registerHelper('eq', function(value, test) {
+	return (value === test);
 });

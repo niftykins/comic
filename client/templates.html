@@ -205,7 +205,7 @@
 <template name="page">
 	<div class="page well">
 		<h3>
-			<a href="{{pathFor 'chapter'}}">Chapter {{chapter}}</a>, Page {{page}}
+			<a href="{{pathFor 'chapter'}}">Chapter {{chapter}}</a>, {{#if eq page 0}}Cover{{else}}Page {{page}}{{/if}}
 		</h3>
 		<p>By {{author}}</p>
 		<P>{{timeAgo posted}}</P>

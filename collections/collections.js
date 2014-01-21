@@ -233,13 +233,19 @@ Meteor.methods({
 			chapter: attrs.chapter,
 			title: attrs.title,
 			fileId: attrs.fileId,
-			pageCount: 0,
-			posted: new Date().getTime(),
+			pageCount: -1,
+			posted: new Date().getTime()
 		};
 
-		Chapters.insert(chapter);
+		var chapterId = Chapters.insert(chapter);
 
-		logger('info', 'New Chapter', chapter);
+		logger('info', 'New Chapter', Chapters.findOne(chapterId));
+
+		Meteor.call('page', {
+			chapter: chapter.chapter,
+			fileId: attrs.fileId,
+			type: attrs.type
+		});
 
 		return chapter.chapter;
 	},
@@ -277,6 +283,15 @@ Meteor.methods({
 		});
 
 		logger('info', 'Update Chapter', Chapters.findOne({chapter: attrs.chapter}));
+
+		if(attrs.fileId) {
+			Meteor.call('updatePage', {
+				chapter: attrs.chapter,
+				page: 0,
+				type: attrs.type,
+				fileId: attrs.fileId
+			});
+		}
 
 		return attrs.chapter;
 	},
