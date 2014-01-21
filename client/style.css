@@ -1,16 +1,18 @@
+/* arrow styling */
 .arrows {
 	margin-bottom: 15px;
 	text-align: center;
 }
 .arrows .fa {
 	vertical-align: middle;
+}
+.arrows .arrow-margin {
 	margin-left: 10px;
 	margin-right: 10px;
 }
-.arrows .btn {
-	margin-left: 10px;
-	margin-right: 10px;
-}
+
+
+/* misc */
 .unselectable {
 	-webkit-user-select: none;
 	-moz-user-select: none;
@@ -21,29 +23,35 @@
 img {
 	max-width: 100%;
 }
+.image-listing {
+	margin-top: 10px;
+}
+
+/* chapter view */
 .chapter-cover {
-	max-height: 430px;
+	display: block;
+	margin: 0 auto;
+	max-height: 460px;
 }
 .chapter-thumb {
 	display: block;
 }
 .page-chapter {
-	display: block;
+	margin: 0 auto;
 	text-align: center;
+	width: 140px;
 }
+
+/* page view */
 .page img {
 	display: block;
 	margin: 0 auto;
 }
 
-.image-listing {
-	margin-top: 10px;
-}
-
+/* edit pages */
 .edit .options select {
 	margin-bottom: 15px;
 }
-
 .new-image {
 	text-align: center;
 }
@@ -55,6 +63,7 @@ img {
 	cursor: pointer;
 }
 
+/* side panel */
 .highlight-image {
 	display: block;
 	height: 150px;

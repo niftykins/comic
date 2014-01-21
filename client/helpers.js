@@ -74,7 +74,10 @@ Template.archive.helpers({
 
 Template.chapter.helpers({
 	pages: function() {
-		return Pages.find({ chapter: this.chapter }, {
+		return Pages.find({
+			chapter: this.chapter,
+			page: {$ne: 0}
+		}, {
 			sort: ['chapter', 'page']
 		});
 	}

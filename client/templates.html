@@ -179,7 +179,9 @@
 
 		<div class="row">
 			<div class="col-md-6">
-				<img class="chapter-cover" src='{{cfsFileUrl "default" file=getFile}}'>
+				<a href="/{{chapter}}/0">
+					<img class="chapter-cover" src='{{cfsFileUrl "default" file=getFile}}'>
+				</a>
 			</div>
 
 			{{#each pages}}
@@ -222,7 +224,7 @@
 			{{/with}}
 
 			{{#with previous}}
-				<a href="{{pathFor 'page'}}"><i class="fa fa-3x fa-angle-left"></i></a>
+				<a href="{{pathFor 'page'}}"><i class="arrow-margin fa fa-3x fa-angle-left"></i></a>
 			{{/with}}
 		{{/if}}
 
@@ -230,7 +232,7 @@
 
 		{{#if notLast}}
 			{{#with next}}
-				<a href="{{pathFor 'page'}}"><i class="fa fa-3x fa-angle-right"></i></a>
+				<a href="{{pathFor 'page'}}"><i class="arrow-margin fa fa-3x fa-angle-right"></i></a>
 			{{/with}}
 
 			{{#with last}}
@@ -248,7 +250,7 @@
 			{{/with}}
 
 			{{#with previous}}
-				<a href="{{pathFor 'sillies'}}"><i class="fa fa-3x fa-angle-left"></i></a>
+				<a href="{{pathFor 'sillies'}}"><i class="arrow-margin fa fa-3x fa-angle-left"></i></a>
 			{{/with}}
 		{{/if}}
 
@@ -256,7 +258,7 @@
 
 		{{#if notLast}}
 			{{#with next}}
-				<a href="{{pathFor 'sillies'}}"><i class="fa fa-3x fa-angle-right"></i></a>
+				<a href="{{pathFor 'sillies'}}"><i class="arrow-margin fa fa-3x fa-angle-right"></i></a>
 			{{/with}}
 
 			{{#with last}}

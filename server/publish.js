@@ -44,12 +44,6 @@ var handles = {
 		});
 
 		return destination.fileData;
-	},
-	callback: function(options, cb, params) {
-		if(cb) {
-			console.log('image callback attempt');
-			cb.apply(this, params);
-		}
 	}
 };
 
