@@ -28,13 +28,8 @@ Template.newsFeed.helpers({
 	},
 	notLast: function() {
 		var max = News.find().count() - 3;
-		return !Session.equals('skipNews', max);
-	}
-});
-
-Template.sillyHighlight.helpers({
-	silly: function() {
-		return Sillies.find({}, {sort: {posted: -1}}).fetch()[0];
+		var current = Session.get('skipNews');
+		return current < max;
 	}
 });
 
@@ -66,6 +61,12 @@ Template.newsPost.events({
 	}
 });
 
+Template.sillyHighlight.helpers({
+	silly: function() {
+		return Sillies.find({}, {sort: {posted: -1}}).fetch()[0];
+	}
+});
+
 Template.archive.helpers({
 	chapters: function() {
 		return Chapters.find({}, { sort: { chapter: 1 } });
@@ -75,8 +76,7 @@ Template.archive.helpers({
 Template.chapter.helpers({
 	pages: function() {
 		return Pages.find({
-			chapter: this.chapter,
-			page: {$ne: 0}
+			chapter: this.chapter
 		}, {
 			sort: ['chapter', 'page']
 		});
@@ -728,6 +728,25 @@ Template.editSilly.events({
 	}
 });
 
+Session.setDefault('loadDisqus', true);
+Template.disqus.rendered = function() {
+	if(Session.equals('loadDisqus', true) && !window.DISQUS) {
+		Session.set('loadDisqus', false);
+		var disqus_shortname = 'biscomic';
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	}
+
+	if(Session.equals('loadDisqus', true) && window.DISQUS) {
+		Session.set('loadDisqus', false);
+		window.DISQUS.reset({
+			reload: true,
+			config: function() {}
+		});
+	}
+};
+
 Handlebars.registerHelper('getFile', function() {
 	return Images.findOne(this.fileId);
 });
@@ -762,4 +781,17 @@ Handlebars.registerHelper('newLineToBr', function(str) {
 
 Handlebars.registerHelper('eq', function(value, test) {
 	return (value === test);
+});
+
+Handlebars.registerHelper('truncate', function(str, length, omission) {
+	if(typeof omission === 'object') omission = '...';
+
+	if(str.length > length) {
+		str = str.substr(0, length - omission.length);
+		str = str.substr(0, Math.min(str.length, str.lastIndexOf(' '))) + omission;
+	}
+
+	console.log(str);
+
+	return str;
 });

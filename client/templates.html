@@ -6,18 +6,30 @@
 </head>
 
 <template name="layout">
-	<div class="container">
-		{{> header}}
-		{{> meteorErrors}}
-		<div class="row">
-			<div class="col-md-9">
-				{{yield}}
-			</div>
-			<div class="col-md-3 side-panel">
-				{{> sillyHighlight}}
-				{{> newsFeed}}
+	<div class="page-wrapper">
+		<div class="container">
+			{{> header}}
+			{{> meteorErrors}}
+			<div class="row">
+				<div class="col-md-9">
+					{{yield}}
+				</div>
+				<div class="col-md-3 side-panel">
+					{{> sillyHighlight}}
+					{{> newsFeed}}
+				</div>
 			</div>
 		</div>
+	</div>
+
+	<div class="container footer">
+		{{> footer}}
+	</div>
+</template>
+
+<template name="footer">
+	<div class="ui segment">
+		<p class="item">dragons are smokin' hot</p>
 	</div>
 </template>
 
@@ -86,28 +98,28 @@
 </template>
 
 <template name="newsFeed">
-	<div class="news-feed">
+	<div class="news-feed" id="news-feed">
 		{{#if notFirst}}
-			<div class="news-scroll well well-sm" id="news-up">
-				<i class="fa fa-2x fa-chevron-up"></i>
+			<div class="news-scroll ui attached segment" id="news-up">
+				<i class="big up arrow icon"></i>
 			</div>
 		{{/if}}
 		{{#each news}}
 			{{> newsPost}}
 		{{/each}}
 		{{#if notLast}}
-			<div class="news-scroll well well-sm" id="news-down">
-				<i class="fa fa-2x fa-chevron-down"></i>
+			<div class="news-scroll ui attached segment" id="news-down">
+				<i class="big down arrow icon"></i>
 			</div>
 		{{/if}}
 	</div>
 </template>
 
 <template name="sillyHighlight">
-	<div class="silly-highlight well">
+	<div class="silly-highlight ui segment">
 		{{#with silly}}
 			<h4>Latest Silly <small>{{title}}</small></h4>
-			<a class="highlight-image" style="background-image:url(http://biscomic.com{{cfsFileUrl 'default' file=getFile}});" href="{{pathFor 'sillies'}}"></a>
+			<a class="highlight-image" style="background-image:url({{cfsFileUrl 'default' file=getFile}});" href="{{pathFor 'sillies'}}"></a>
 		{{/with}}
 	</div>
 </template>
@@ -121,7 +133,7 @@
 </template>
 
 <template name="newsPost">
-	<div class="news-post well">
+	<div class="ui attached segment">
 		{{#if isAdmin}}
 			<div class="edit-buttons pull-right">
 				<div id="btn-remove" class="btn btn-sm btn-danger">Remove</div>
@@ -130,89 +142,96 @@
 
 		<h4>{{timeAgo posted}} <small>by {{author}}</small></h4>
 		<p>{{{newLineToBr content}}}</p>
-	</div>
 
-	{{#if isAdmin}}
-		<div id="confirm-modal" class="modal fade" tabindex="-1">
-			<div class="modal-dialog">
-				<div class="modal-content">
-					<div class="modal-header">
-						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-						<h4 class="modal-title">Remove</h4>
+		{{#if isAdmin}}
+			<div id="confirm-modal" class="modal fade" tabindex="-1">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+							<h4 class="modal-title">Remove</h4>
+						</div>
+						<div class="modal-body">
+							<p>Are you sure you want to remove this news item?</p>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+							<button type="button" id="confirm-remove" class="btn btn-danger">Remove</button>
+						</div>
 					</div>
-					<div class="modal-body">
-						<p>Are you sure you want to remove this news item?</p>
-					</div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-						<button type="button" id="confirm-remove" class="btn btn-danger">Remove</button>
-					</div>
-				</div>
-			</dic>
-		</div>
-	{{/if}}
+				</dic>
+			</div>
+		{{/if}}
+	</div>
 </template>
 
 <template name="archive">
-	<div class="chapters">
-		{{#each chapters}}
-			{{> chapterArchive}}
-		{{/each}}
+	<div class="ui segment">
+		<h3>Stuff</h3>
+
+		<div class="ui variable items">
+			{{#each chapters}}
+				{{> chapterArchive}}
+			{{/each}}
+		</div>
 	</div>
 </template>
 
 <template name="chapterArchive">
-	<div class="well">
-		<h3><a href="{{pathFor 'chapter'}}">
-			Chapter {{chapter}}, {{title}}
-		</a></h3>
-		<span>{{pluralize pageCount "page"}}</span>
-	</div>
+	<a href="{{pathFor 'chapter'}}" class="item">
+		<div class="ui rounded image">
+			<img src='{{cfsFileUrl "thumb" file=getFile}}'>
+		</div>
+		<div class="content">
+			<div class="meta">{{pluralize pageCount "page"}}</div>
+			<div class="name">{{chapter}}. {{truncate title 28}}</div>
+		</div>
+	</a>
 </template>
 
 <template name="chapter">
-	<div class="chapter well">
+	<div class="ui segment">
 		<h3><a href="{{pathFor 'chapter'}}">
 			Chapter {{chapter}}, {{title}}
 		</a></h3>
 		<span>{{pluralize pageCount "page"}}</span>
 
-		<div class="row">
-			<div class="col-md-6">
-				<a href="/{{chapter}}/0">
-					<img class="chapter-cover" src='{{cfsFileUrl "default" file=getFile}}'>
-				</a>
-			</div>
-
+		<div class="ui variable items">
 			{{#each pages}}
-			<div class="col-md-3">
 				{{> pageChapter}}
-			</div>
 			{{/each}}
-
-			<div class="clearfix"></div>
 		</div>
 	</div>
 </template>
 
 <template name="pageChapter">
-	<div class="page-chapter">
-		<a href="{{pathFor 'page'}}">
-			<img class="chapter-thumb" src='{{cfsFileUrl "thumb" file=getFile}}'>
-			{{page}}
-		</a>
-	</div>
+	<a href="{{pathFor 'page'}}" class="item">
+		<div class="ui rounded image">
+			<img src='{{cfsFileUrl "thumb" file=getFile}}'>
+		</div>
+		<div class="content">
+			<div class="name">{{#if eq page 0}}Cover{{else}}Page {{page}}{{/if}}</div>
+		</div>
+	</a>
 </template>
 
 <template name="page">
-	<div class="page well">
+	<div class="page ui segment">
 		<h3>
 			<a href="{{pathFor 'chapter'}}">Chapter {{chapter}}</a>, {{#if eq page 0}}Cover{{else}}Page {{page}}{{/if}}
 		</h3>
 		<p>By {{author}}</p>
-		<P>{{timeAgo posted}}</P>
+		<p>{{timeAgo posted}}</p>
 		{{> arrows}}
-		<img src='{{cfsFileUrl "default" file=getFile}}'>
+		<img class="ui centered rounded image" src='{{cfsFileUrl "default" file=getFile}}'>
+
+		<div class="ui horizontal icon divider">
+			<i class="large dark comment icon"></i>
+		</div>
+
+		{{#constant}}
+			{{> disqus}}
+		{{/constant}}
 	</div>
 </template>
 
@@ -220,11 +239,11 @@
 	<div class="arrows unselectable">
 		{{#if notFirst}}
 			{{#with first}}
-				<a href="{{pathFor 'page'}}"><i class="fa fa-3x fa-angle-double-left"></i></a>
+				<a href="{{pathFor 'page'}}"><i class="huge dark left double angle icon"></i></a>
 			{{/with}}
 
 			{{#with previous}}
-				<a href="{{pathFor 'page'}}"><i class="arrow-margin fa fa-3x fa-angle-left"></i></a>
+				<a href="{{pathFor 'page'}}"><i class="arrow-margin huge dark left angle icon"></i></a>
 			{{/with}}
 		{{/if}}
 
@@ -232,11 +251,11 @@
 
 		{{#if notLast}}
 			{{#with next}}
-				<a href="{{pathFor 'page'}}"><i class="arrow-margin fa fa-3x fa-angle-right"></i></a>
+				<a href="{{pathFor 'page'}}"><i class="arrow-margin huge dark right angle icon"></i></a>
 			{{/with}}
 
 			{{#with last}}
-				<a href="{{pathFor 'page'}}"><i class="fa fa-3x fa-angle-double-right"></i></a>
+				<a href="{{pathFor 'page'}}"><i class="huge dark right double angle icon"></i></a>
 			{{/with}}
 		{{/if}}
 	</div>
@@ -246,43 +265,53 @@
 	<div class="arrows unselectable">
 		{{#if notFirst}}
 			{{#with first}}
-				<a href="{{pathFor 'sillies'}}"><i class="fa fa-3x fa-angle-double-left"></i></a>
+				<a href="{{pathFor 'sillies'}}"><i class="huge dark left double angle icon"></i></a>
 			{{/with}}
 
 			{{#with previous}}
-				<a href="{{pathFor 'sillies'}}"><i class="arrow-margin fa fa-3x fa-angle-left"></i></a>
+				<a href="{{pathFor 'sillies'}}"><i class="arrow-margin huge dark left angle icon"></i></a>
 			{{/with}}
 		{{/if}}
 
-		<a href="/sillies" class="btn btn-default">Archive</a>
+		<a href="/sillies" class="btn btn-default">Sillies</a>
 
 		{{#if notLast}}
 			{{#with next}}
-				<a href="{{pathFor 'sillies'}}"><i class="arrow-margin fa fa-3x fa-angle-right"></i></a>
+				<a href="{{pathFor 'sillies'}}"><i class="arrow-margin huge dark right angle icon"></i></a>
 			{{/with}}
 
 			{{#with last}}
-				<a href="{{pathFor 'sillies'}}"><i class="fa fa-3x fa-angle-double-right"></i></a>
+				<a href="{{pathFor 'sillies'}}"><i class="huge dark right double angle icon"></i></a>
 			{{/with}}
 		{{/if}}
 	</div>
 </template>
 
 <template name="sillies">
-	<div class="sillies well">
+	<div class="ui segment">
 		<h3>Sillies</h3>
-		{{#each sillies}}
-			<div class="image-listing">
-				<a href="{{pathFor 'sillies'}}">
-					<span>{{number}}</span> <img src='{{cfsFileUrl "thumb" file=getFile}}'>
-				</a>
-			</div>
-		{{/each}}
+
+		<div class="ui variable items">
+			{{#each sillies}}
+				{{> sillyItem}}
+			{{/each}}
+		</div>
 	</div>
 </template>
 
+<template name="sillyItem">
+	<a href="{{pathFor 'sillies'}}" class="item">
+		<div class="ui rounded image">
+			<img src='{{cfsFileUrl "square" file=getFile}}'>
+		</div>
+		<div class="content">
+			<div class="name">Silly {{number}}</div>
+		</div>
+	</a>
+</template>
+
 <template name="silly">
-	<div class="page well">
+	<div class="page ui segment">
 		{{#if isAdmin}}
 			<div class="edit-buttons pull-right">
 				<a href="{{pathFor 'editSilly'}}" class="btn btn-primary">Edit</a>
@@ -291,10 +320,10 @@
 
 		<h3>Silly {{number}}: {{title}}</h3>
 		<p>By {{author}}</p>
-		<P>{{timeAgo posted}}</P>
+		<p>{{timeAgo posted}}</p>
 		{{> sillyArrows}}
 
-		<img src='{{cfsFileUrl "default" file=getFile}}'>
+		<img class="ui centered rounded image" src='{{cfsFileUrl "default" file=getFile}}'>
 	</div>
 </template>
 
@@ -420,7 +449,7 @@
 			<label for="file-input">
 				<div class="wrap">
 					<p class="small text-center">click to change</p>
-					<img class="editImage" src='{{cfsFileUrl "default" file=getFile}}'>
+					<img class="editImage ui rounded image" src='{{cfsFileUrl "default" file=getFile}}'>
 				</div>
 			</label>
 
@@ -463,7 +492,7 @@
 			<label for="file-input">
 				<div class="wrap">
 					<p class="small text-center">click to change</p>
-					<img class="editImage" src='{{cfsFileUrl "default" file=getFile}}'>
+					<img class="editImage ui rounded image" src='{{cfsFileUrl "default" file=getFile}}'>
 				</div>
 			</label>
 
@@ -507,7 +536,7 @@
 			<label for="file-input">
 				<div class="wrap">
 					<p class="small text-center">click to change</p>
-					<img class="editImage" src='{{cfsFileUrl "default" file=getFile}}'>
+					<img class="editImage ui rounded image" src='{{cfsFileUrl "default" file=getFile}}'>
 				</div>
 			</label>
 
@@ -532,4 +561,141 @@
 			</div>
 		</dic>
 	</div>
+</template>
+
+<template name="comments">
+	<div class="ui minimal comments">
+		<div class="comment">
+			<a class="avatar">
+				<img src="/cfs/images/ai6xHco4xtJxd6RMe_thumb.jpg">
+			</a>
+			<div class="content">
+				<a class="author">Dog Doggington</a>
+				<div class="metadata">
+					<span class="date">2 days ago</span>
+				</div>
+				<div class="text">
+					I think this is a great idea and i am voting on it
+				</div>
+				<div class="actions">
+					<a class="reply">Reply</a>
+					<a class="delete">Delete</a>
+				</div>
+			</div>
+			<div class="comments">
+				<div class="comment">
+					<a class="avatar">
+						<img src="/cfs/images/ai6xHco4xtJxd6RMe_thumb.jpg">
+					</a>
+					<div class="content">
+						<a class="author">Pawfin Dog</a>
+						<div class="metadata">
+							<span class="date">1 day ago</span>
+						</div>
+						<div class="text">
+							I think this is a great idea and i am voting on it
+						</div>
+						<div class="actions">
+							<a class="reply">Reply</a>
+							<a class="delete">Delete</a>
+						</div>
+					</div>
+					<div class="comments">
+						<div class="comment">
+							<a class="avatar">
+								<img src="/cfs/images/ai6xHco4xtJxd6RMe_thumb.jpg">
+							</a>
+							<div class="content">
+								<a class="author">Dog Doggington</a>
+								<div class="metadata">
+									<span class="date">20 minutes ago</span>
+								</div>
+								<div class="text">
+									I think this is a great idea and i am voting on it
+								</div>
+								<div class="actions">
+									<a class="reply">Reply</a>
+									<a class="delete">Delete</a>
+								</div>
+							</div>
+						</div>
+						<div class="comment">
+							<a class="avatar">
+								<img src="/cfs/images/ai6xHco4xtJxd6RMe_thumb.jpg">
+							</a>
+							<div class="content">
+								<a class="author">Dog Doggington</a>
+								<div class="metadata">
+									<span class="date">20 minutes ago</span>
+								</div>
+								<div class="text">
+									Also pizza.
+								</div>
+								<div class="actions">
+									<a class="reply">Reply</a>
+									<a class="delete">Delete</a>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="comment">
+					<a class="avatar">
+						<img src="/cfs/images/ai6xHco4xtJxd6RMe_thumb.jpg">
+					</a>
+					<div class="content">
+						<a class="author">Dog Doggington</a>
+						<div class="metadata">
+							<span class="date">2 days ago</span>
+						</div>
+						<div class="text">
+							I think this is a great idea and i am voting on it
+						</div>
+						<div class="actions">
+							<a class="reply">Reply</a>
+							<a class="delete">Delete</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="comment">
+			<a class="avatar">
+				<img src="/cfs/images/ai6xHco4xtJxd6RMe_thumb.jpg">
+			</a>
+			<div class="content">
+				<a class="author">Dog Doggington</a>
+				<div class="metadata">
+					<span class="date">20 hours ago</span>
+				</div>
+				<div class="text">
+					I think this is a great idea and i am voting on it
+				</div>
+				<div class="actions">
+					<a class="reply">Reply</a>
+				</div>
+			</div>
+		</div>
+		<div class="comment">
+			<a class="avatar">
+				<img src="/cfs/images/ai6xHco4xtJxd6RMe_thumb.jpg">
+			</a>
+			<div class="content">
+				<a class="author">Pawfin Dog</a>
+				<div class="metadata">
+					<span class="date">15 hours ago</span>
+				</div>
+				<div class="text">
+					I think this is a great idea and i am voting on it
+				</div>
+				<div class="actions">
+					<a class="reply">Reply</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</template>
+
+<template name="disqus">
+	<div id="disqus_thread"></div>
 </template>
