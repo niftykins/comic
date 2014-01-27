@@ -1,6 +1,20 @@
 var sort = { sort: ["chapter", "page"] };
 //$.fn.editable.defaults.mode = 'inline';
 
+Template.header.rendered = function() {
+	if($.fn.dropdown.noConflict) {
+		$.fn.dropdown.noConflict();
+	}
+
+	$.fn.dropdown.settings.performance = false;
+	$.fn.dropdown.settings.verbose = false;
+	$.fn.dropdown.settings.debug = false;
+	$.fn.transition.settings.performance = false;
+	$.fn.transition.settings.verbose = false;
+	$.fn.transition.settings.debug = false;
+	$('.ui.dropdown').dropdown();
+};
+
 Template.header.helpers({
 	active: function() {
 		var args = Array.prototype.slice.call(arguments, 0);
@@ -10,7 +24,7 @@ Template.header.helpers({
 			return Router.current().route.name === name;
 		});
 
-		return active && 'active';
+		if(active) return 'active';
 	}
 });
 
@@ -728,21 +742,28 @@ Template.editSilly.events({
 	}
 });
 
-Session.setDefault('loadDisqus', true);
 Template.disqus.rendered = function() {
-	if(Session.equals('loadDisqus', true) && !window.DISQUS) {
-		Session.set('loadDisqus', false);
-		var disqus_shortname = 'biscomic';
+	var data = this.data;
+	var id = data.chapter + '/' + data.page;
+	var url = 'http://biscomic.com/' + id;
+
+	if(!window.DISQUS) {
+		disqus_shortname = 'biscomic';
+		disqus_identifier = id;
+		disqus_url = url;
+
 		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
 		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
 		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
 	}
 
-	if(Session.equals('loadDisqus', true) && window.DISQUS) {
-		Session.set('loadDisqus', false);
-		window.DISQUS.reset({
+	if(window.DISQUS) {
+		DISQUS.reset({
 			reload: true,
-			config: function() {}
+			config: function() {
+				this.page.identifier = id;
+				this.page.url = url;
+			}
 		});
 	}
 };
@@ -790,8 +811,6 @@ Handlebars.registerHelper('truncate', function(str, length, omission) {
 		str = str.substr(0, length - omission.length);
 		str = str.substr(0, Math.min(str.length, str.lastIndexOf(' '))) + omission;
 	}
-
-	console.log(str);
 
 	return str;
 });

@@ -8,6 +8,7 @@
 <template name="layout">
 	<div class="page-wrapper">
 		<div class="container">
+			{{> headerImage}}
 			{{> header}}
 			{{> meteorErrors}}
 			<div class="row">
@@ -27,6 +28,12 @@
 	</div>
 </template>
 
+<template name="headerImage">
+	<a href="{{pathFor 'home'}}">
+		<img class="ui image" src="/images/1140header.png">
+	</a>
+</template>
+
 <template name="footer">
 	<div class="ui segment">
 		<p class="item">dragons are smokin' hot</p>
@@ -34,33 +41,63 @@
 </template>
 
 <template name="header">
-	<div class="navbar navbar-default" role="navigation">
-		<div class="navbar-header">
-			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-				<span class="sr-only">Toggle navigation</span>
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-			</button>
-			<a class="navbar-brand" href="{{pathFor 'home'}}">BiS Comic</a>
+	<div class="ui inverted menu">
+		<div class="visible-xs ui fluid dropdown link item">
+			<i class="list pull-right icon"></i>
+			<div class="text">Menu</div>
+			<div class="menu fluid">
+				{{> menuItems}}
+			</div>
 		</div>
-
-		<div class="collapse navbar-collapse">
-			<ul class="nav navbar-nav">
-				<li class="{{active 'home'}}"><a href="{{pathFor 'home'}}">Latest</a></li>
-				<li class="{{active 'archive'}}"><a href="{{pathFor 'archive'}}">Archive</a></li>
-				<li class="{{active 'sillies'}}"><a href="/sillies">Sillies</a></li>
-				<li class="{{active 'news'}}"><a href="{{pathFor 'news'}}">News</a></li>
-				{{#if isAdmin}}
-					<li class="{{active 'submit'}}"><a href="{{pathFor 'submit'}}">Submit</a></li>
-					<li class="{{active 'edit'}}"><a href="{{pathFor 'edit'}}">Edit</a></li>
-				{{/if}}
-			</ul>
-			<ul class="nav navbar-nav navbar-right">
-				<li><a>{{loginButtons}}</a></li>
-			</ul>
+		<div class="hidden-xs">
+			{{> menuItems}}
 		</div>
 	</div>
+</template>
+
+<template name="menuItems">
+	<a class="{{active 'home'}} item" href="{{pathFor 'home'}}">
+		<i class="home icon"></i>Latest
+	</a>
+	<a class="{{active 'archive'}} item" href="{{pathFor 'archive'}}">
+		<i class="archive icon"></i>Archive
+	</a>
+
+	<div class="visible-xs">
+		<a class="{{active 'oneshots'}} item" href="/extras">
+			<i class="magic icon"></i>Oneshots
+		</a>
+		<a class="{{active 'gallery'}} item" href="/extras">
+			<i class="magic icon"></i>Gallery
+		</a>
+		<a class="{{active 'characters'}} item" href="/extras">
+			<i class="magic icon"></i>Characters
+		</a>
+	</div>
+
+	<div class="hidden-xs ui dropdown link item">
+		<i class="magic icon"></i>
+		<div class="text">Extras</div>
+		<div class="menu fluid">
+			<a class="{{active 'oneshots'}} item" href="/extras">Oneshots</a>
+			<a class="{{active 'gallery'}} item" href="/extras">Gallery</a>
+			<a class="{{active 'characters'}} item" href="/extras">Characters</a>
+		</div>
+	</div>
+
+	<a class="{{active 'news'}} item" href="{{pathFor 'news'}}">
+		<i class="browser icon"></i>News
+	</a>
+	{{#if isAdmin}}
+		<a class="{{active 'submit'}} item" href="{{pathFor 'submit'}}">
+			<i class="upload disk icon"></i>Submit
+		</a>
+		<a class="{{active 'edit'}} item" href="{{pathFor 'edit'}}">
+			<i class="edit icon"></i>Edit
+		</a>
+	{{/if}}
+
+	<a class="right item">{{loginButtons}}</a>
 </template>
 
 <template name="loading">
@@ -119,13 +156,13 @@
 	<div class="silly-highlight ui segment">
 		{{#with silly}}
 			<h4>Latest Silly <small>{{title}}</small></h4>
-			<a class="highlight-image" style="background-image:url({{cfsFileUrl 'default' file=getFile}});" href="{{pathFor 'sillies'}}"></a>
+			<a class="highlight-image rounded" style="background-image:url({{cfsFileUrl 'default' file=getFile}});" href="{{pathFor 'sillies'}}"></a>
 		{{/with}}
 	</div>
 </template>
 
 <template name="news">
-	<div class="news">
+	<div class="news-feed">
 		{{#each news}}
 			{{> newsPost}}
 		{{/each}}
@@ -239,23 +276,23 @@
 	<div class="arrows unselectable">
 		{{#if notFirst}}
 			{{#with first}}
-				<a href="{{pathFor 'page'}}"><i class="huge dark left double angle icon"></i></a>
+				<a href="{{pathFor 'page'}}"><img class="left" src="/public/images/fastarrow.png"></a>
 			{{/with}}
 
 			{{#with previous}}
-				<a href="{{pathFor 'page'}}"><i class="arrow-margin huge dark left angle icon"></i></a>
+				<a href="{{pathFor 'page'}}"><img  class="left" src="/public/images/arrow.png"></a>
 			{{/with}}
 		{{/if}}
 
-		<a href="{{pathFor 'archive'}}" class="btn btn-default">Archive</a>
+		<a href="{{pathFor 'page'}}" class="btn btn-default">Archive</a>
 
 		{{#if notLast}}
 			{{#with next}}
-				<a href="{{pathFor 'page'}}"><i class="arrow-margin huge dark right angle icon"></i></a>
+				<a href="{{pathFor 'page'}}"><img  class="right" src="/public/images/arrow.png"></a>
 			{{/with}}
 
 			{{#with last}}
-				<a href="{{pathFor 'page'}}"><i class="huge dark right double angle icon"></i></a>
+				<a href="{{pathFor 'page'}}"><img class="right" src="/public/images/fastarrow.png"></a>
 			{{/with}}
 		{{/if}}
 	</div>
@@ -265,11 +302,11 @@
 	<div class="arrows unselectable">
 		{{#if notFirst}}
 			{{#with first}}
-				<a href="{{pathFor 'sillies'}}"><i class="huge dark left double angle icon"></i></a>
+				<a href="{{pathFor 'sillies'}}"><img class="left" src="/public/images/fastarrow.png"></a>
 			{{/with}}
 
 			{{#with previous}}
-				<a href="{{pathFor 'sillies'}}"><i class="arrow-margin huge dark left angle icon"></i></a>
+				<a href="{{pathFor 'sillies'}}"><img  class="left" src="/public/images/arrow.png"></a>
 			{{/with}}
 		{{/if}}
 
@@ -277,11 +314,11 @@
 
 		{{#if notLast}}
 			{{#with next}}
-				<a href="{{pathFor 'sillies'}}"><i class="arrow-margin huge dark right angle icon"></i></a>
+				<a href="{{pathFor 'sillies'}}"><img  class="right" src="/public/images/arrow.png"></a>
 			{{/with}}
 
 			{{#with last}}
-				<a href="{{pathFor 'sillies'}}"><i class="huge dark right double angle icon"></i></a>
+				<a href="{{pathFor 'sillies'}}"><img class="right" src="/public/images/fastarrow.png"></a>
 			{{/with}}
 		{{/if}}
 	</div>
@@ -525,7 +562,7 @@
 
 		<div class="edit-buttons pull-right">
 			<div id="btn-remove" class="unselectable btn btn-danger">Remove</div>
-			<div id="btn-update" class="btn btn-primary">Update</div>
+			<div id="btn-update" class="btn btn-primary" data-loading-text="Updating">Update</div>
 		</div>
 
 		<h3>Edit Silly {{number}}: <span name="title" class="editable" data-type='text'>{{title}}</span></h3>
