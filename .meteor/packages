@@ -6,14 +6,12 @@
 standard-app-packages
 preserve-inputs
 iron-router
-accounts-password
 spin
 moment
 errors
 collectionFS
 cfs-public-folder
 imagemagick
-accounts-ui-bootstrap-3
 font-awesome-4
 winston
 winston-loggly
@@ -21,3 +19,6 @@ semantic-ui
 bootstrap-3
 x-editable-bootstrap3
 less
+accounts-ui
+accounts-password
+accounts-entry

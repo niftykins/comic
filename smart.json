@@ -5,12 +5,12 @@
     "moment": {},
     "collectionFS": {},
     "imagemagick": {},
-    "accounts-ui-bootstrap-3": {},
     "font-awesome-4": {},
     "winston": {},
     "winston-loggly": {},
     "semantic-ui": {},
     "bootstrap-3": {},
-    "x-editable-bootstrap3": {}
+    "x-editable-bootstrap3": {},
+    "accounts-entry": {}
   }
 }

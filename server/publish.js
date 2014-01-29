@@ -6,8 +6,8 @@ Meteor.publish('chapters', function() {
 	return Chapters.find({}, {sort: {chapter: 1}});
 });
 
-Meteor.publish('sillies', function() {
-	return Sillies.find({}, {sort: {posted: 1}});
+Meteor.publish('extras', function() {
+	return Extras.find({}, {sort: {posted: 1}});
 });
 
 Meteor.publish('news', function() {
@@ -18,6 +18,7 @@ Meteor.publish('news', function() {
 Meteor.publish("userData", function() {
 	return Meteor.users.find({ _id: this.userId }, {
 		fields: {
+			postTime: 1,
 			admin: 1
 		}
 	});

@@ -1,6 +1,6 @@
 Chapters = new Meteor.Collection('chapters');
 Pages = new Meteor.Collection('pages');
-Sillies = new Meteor.Collection('sillies');
+Extras = new Meteor.Collection('extras');
 News = new Meteor.Collection('news');
 
 Images = new CollectionFS('images', {autopublish: false});
@@ -61,7 +61,7 @@ var checkUser = function(user) {
 		throw new Meteor.Error(401, "You need to login to do that.");
 
 	if(!isAdmin(user)) // if they aren't someone with permission
-		throw new Meteor.Error(401, "You don't have permission to do that.");
+		throw new Meteor.Error(403, "You don't have permission to do that.");
 
 	return true;
 };
@@ -83,7 +83,7 @@ Meteor.methods({
 		var chapter = Chapters.findOne({ chapter: attrs.chapter });
 
 		if(!chapter) // no chapter
-			throw new Meteor.Error(422, "Chapter doesn't exist.");
+			throw new Meteor.Error(404, "Chapter doesn't exist.");
 
 		if(!isImage(attrs.type)) {
 			Images.remove(attrs.fileId);
@@ -164,7 +164,7 @@ Meteor.methods({
 		});
 
 		if(!page) // no page
-			throw new Meteor.Error(422, "Page doesn't exist.");
+			throw new Meteor.Error(404, "Page doesn't exist.");
 
 		if(!isImage(attrs.type)) {
 			Images.remove(attrs.fileId);
@@ -326,54 +326,60 @@ Meteor.methods({
 	}
 });
 
-// sillies
+// extras
+var extraTypes = ['oneshot', 'gallery', 'character']; // one in router.js
 Meteor.methods({
-	silly: function(attrs) {
+	extra: function(attrs) {
 		check(attrs, {
 			title: String,
 			type: String,
-			fileId: String
+			fileId: String,
+			fileType: String
 		});
 
 		var user = Meteor.user();
+
+		if(!isImage(attrs.fileType)) {
+			Images.remove(attrs.fileId);
+			throw new Meteor.Error(422, "New page needs an image.");
+		}
 		
 		checkUser();
 
 		if(!attrs.title) // not empty string
-			throw new Meteor.Error(422, "Silly needs a title.");
+			throw new Meteor.Error(422, "Extra needs a title.");
 
-		if(!isImage(attrs.type)) {
-			Images.remove(attrs.fileId);
-			throw new Meteor.Error(422, "New page needs an image.");
-		}
+		if(!_.contains(extraTypes, attrs.type))
+			throw new Meteor.Error(422, "Extra type not valid.");
 
 		if(!attrs.fileId)
 			throw new Meteor.Error(422, "Pretty sure your image upload broke.");
 
-		var sillies = Sillies.find({}, {sort: {posted: -1}});
+		var extras = Extras.find({}, {sort: {posted: -1}});
 
-		var nextSilly;
-		if(sillies.count() === 0)
-			nextSilly = 1;
+		var nextExtra;
+		if(extras.count() === 0)
+			nextExtra = 1;
 		else
-			nextSilly = sillies.fetch()[0].number + 1;
+			nextExtra = extras.fetch()[0].number + 1;
 
-		var silly = {
+		var extra = {
 			authorId: user._id,
 			author: user.username,
-			number: nextSilly,
+			number: nextExtra,
 			posted: new Date().getTime(),
 			fileId: attrs.fileId,
-			title: attrs.title
+			title: attrs.title,
+			type: attrs.type
 		};
 
-		Sillies.insert(silly);
+		Extras.insert(extra);
 
-		logger('info', 'New Silly', silly);
+		logger('info', 'New Extra', extra);
 
-		return nextSilly;
+		return nextExtra;
 	},
-	updateSilly: function(attrs) {
+	updateExtra: function(attrs) {
 		check(attrs, {
 			number: Match.Integer,
 			title: Match.Optional(String),
@@ -383,50 +389,50 @@ Meteor.methods({
 
 		checkUser();
 
-		var silly = Sillies.findOne({number: attrs.number});
+		var extra = Extras.findOne({number: attrs.number});
 
-		if(!silly)
-			throw new Meteor.Error(422, "Silly doesn't exist.");
+		if(!extra)
+			throw new Meteor.Error(404, "Extra doesn't exist.");
 
 		if(attrs.fileId && !isImage(attrs.type)) {
 			Images.remove(attrs.fileId);
-			throw new Meteor.Error(422, "Silly needs to be an image.");
+			throw new Meteor.Error(422, "Extra needs to be an image.");
 		}
 
 		if(attrs.fileId === '')
 			throw new Meteor.Error(422, "Pretty sure your image upload broke.");
 
 		if(attrs.fileId)
-			Images.remove(silly.fileId);
+			Images.remove(extra.fileId);
 
-		Sillies.update({
+		Extras.update({
 			number: attrs.number
 		}, {
 			$set: {
-				fileId: attrs.fileId || silly.fileId,
-				title: attrs.title || silly.title,
+				fileId: attrs.fileId || extra.fileId,
+				title: attrs.title || extra.title,
 				updated: new Date().getTime()
 			}
 		});
 
-		logger('info', 'Update Silly', silly);
+		logger('info', 'Update Extra', extra);
 
 		return attrs.number;
 	},
-	deleteSilly: function(number) {
+	deleteExtra: function(number) {
 		check(number, Match.Integer);
 
 		checkUser();
 
-		var silly = Sillies.findOne({number: number});
+		var extra = Extras.findOne({number: number});
 
-		if(!silly)
-			throw new Meteor.Error(404, "Silly " + number + " doesn't exist.");
+		if(!extra)
+			throw new Meteor.Error(404, "Extra " + number + " doesn't exist.");
 
-		logger('info', 'Delete Silly', silly);
+		logger('info', 'Delete Extra', extra);
 
-		Images.remove(silly.fileId);
-		Sillies.remove(silly._id);
+		Images.remove(extra.fileId);
+		Extras.remove(extra._id);
 	}
 });
 
@@ -442,7 +448,7 @@ Meteor.methods({
 		checkUser();
 
 		if(!attrs.content) // not empty string
-			throw new Meteor.Error(422, "Chapter needs a title.");
+			throw new Meteor.Error(422, "News needs content.");
 
 		var news = {
 			author: user.username,
@@ -463,5 +469,43 @@ Meteor.methods({
 		logger('info', 'Delete News', News.findOne(id));
 
 		News.remove(id);
+	}
+});
+
+// post time
+Meteor.methods({
+	time: function(time) {
+		check(time, {
+			day: String,
+			hour: String,
+			minute: String,
+			meridiem: String
+		});
+
+		checkUser();
+
+		var days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+		if(!_.contains(days, time.day))
+			throw new Meteor.Error(422, "Time needs a day.");
+
+		var hours = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
+		if(!_.contains(hours, time.hour))
+			throw new Meteor.Error(422, "Time needs an hour.");
+		time.hour = parseInt(time.hour, 10);
+
+		var minutes = ['00', '15', '30', '45'];
+		if(!_.contains(minutes, time.minute))
+			throw new Meteor.Error(422, "Time needs minutes.");
+		time.minute = parseInt(time.minute, 10);
+
+		var meridiems = ['am', 'pm'];
+		if(!_.contains(meridiems, time.meridiem))
+			throw new Meteor.Error(422, "Time needs a meridiem.");
+
+		logger('info', 'Default time change', time);
+
+		var user = Meteor.user();
+
+		Meteor.users.update(user._id, {$set: { postTime: time } });
 	}
 });

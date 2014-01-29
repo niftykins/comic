@@ -1,21 +1,57 @@
 var sort = { sort: ["chapter", "page"] };
 //$.fn.editable.defaults.mode = 'inline';
 
-Template.header.rendered = function() {
-	if($.fn.dropdown.noConflict) {
-		$.fn.dropdown.noConflict();
+var Init = {
+	dropdown: function() {
+		$('.ui.dropdown').dropdown();
 	}
+};
 
-	$.fn.dropdown.settings.performance = false;
-	$.fn.dropdown.settings.verbose = false;
-	$.fn.dropdown.settings.debug = false;
-	$.fn.transition.settings.performance = false;
-	$.fn.transition.settings.verbose = false;
-	$.fn.transition.settings.debug = false;
+// SubmitErrors
+var FormErrors = {
+	show: function(parent, type, message, style) {
+		var header;
+		var $message = $(parent).children('.message');
+
+		$message.removeClass('error info');
+		style = style || 'error';
+		$message.addClass(style);
+
+		switch(type) {
+			case 302: header = "Already Exists"; break;
+			case 400:
+				header = "Naughty";
+				message = "Your values don't match the expected types.";
+				break;
+			case 401: header = "Action Forbidden"; break;
+			case 403: header = "Action Forbidden"; break;
+			case 404: header = "Not Found"; break;
+			case 422: header = "Bad Data"; break;
+			default: header = type; break;
+		}
+
+		$message.children('.header').text(header);
+		$message.children('.message').text(message);
+
+		$message.addClass('show');
+	},
+	hide: function(parent) {
+		$(parent).find('.ui.message').removeClass('show');
+	}
+};
+
+// global events
+Template.layout.events({
+	'click .message > .remove': function(e) {
+		$(e.target).parent().removeClass('show');
+	}
+});
+
+Template.header.rendered = function() {
 	$('.ui.dropdown').dropdown();
 };
 
-Template.header.helpers({
+Template.menuItems.helpers({
 	active: function() {
 		var args = Array.prototype.slice.call(arguments, 0);
 		args.pop(); // last element is hash
@@ -66,7 +102,6 @@ Template.newsPost.events({
 	},
 	'click #confirm-remove': function(e) {
 		Meteor.call('deleteNews', this._id, function(error) {
-			Errors.clearAll();
 			if(error)
 				Errors.throw(error.reason);
 			else
@@ -75,9 +110,9 @@ Template.newsPost.events({
 	}
 });
 
-Template.sillyHighlight.helpers({
-	silly: function() {
-		return Sillies.find({}, {sort: {posted: -1}}).fetch()[0];
+Template.extraHighlight.helpers({
+	extra: function() {
+		return Extras.find({}, {sort: {posted: -1}}).fetch()[0];
 	}
 });
 
@@ -96,6 +131,13 @@ Template.chapter.helpers({
 		});
 	}
 });
+
+Template.page.rendered = function() {
+	$('.divider > .icon').popup({
+		on: 'hover',
+		position: 'bottom center'
+	});
+};
 
 var findAdjacent = function(c, p, dir) {
 	dir = dir || 1;
@@ -130,36 +172,36 @@ Template.arrows.helpers({
 	}
 });
 
-var findAdjacentSilly = function(n, dir) {
+var findAdjacentExtra = function(type, n, dir) {
 	dir = dir || 1;
-	var sillies = Sillies.find({}, sort).fetch();
+	var extras = Extras.find({type: type}, sort).fetch();
 	var adj;
-	sillies.forEach(function(silly, i) {
-		if(silly.number === n) {
-			adj = sillies[i+dir];
+	extras.forEach(function(extra, i) {
+		if(extra.number === n) {
+			adj = extras[i+dir];
 			return;
 		}
 	});
 	return adj;
 };
-Template.sillyArrows.helpers({
+Template.extraArrows.helpers({
 	notFirst: function() {
-		return this._id !== Sillies.find({}, {sort: {posted: 1}}).fetch()[0]._id;
+		return this._id !== Extras.find({type: this.type}, {sort: {posted: 1}}).fetch()[0]._id;
 	},
 	notLast: function() {
-		return this._id !== Sillies.find({}, {sort: {posted: -1}}).fetch()[0]._id;
+		return this._id !== Extras.find({type: this.type}, {sort: {posted: -1}}).fetch()[0]._id;
 	},
 	first: function() {
-		return Sillies.find({}, {sort: {posted: 1}}).fetch()[0];
+		return Extras.find({type: this.type}, {sort: {posted: 1}}).fetch()[0];
 	},
 	previous: function() {
-		return findAdjacentSilly(this.number, -1);
+		return findAdjacentExtra(this.type, this.number, -1);
 	},
 	next: function() {
-		return findAdjacentSilly(this.number, 1);
+		return findAdjacentExtra(this.type, this.number, 1);
 	},
 	last: function() {
-		return Sillies.find({}, {sort: {posted: -1}}).fetch()[0];
+		return Extras.find({type: this.type}, {sort: {posted: -1}}).fetch()[0];
 	}
 });
 
@@ -168,6 +210,8 @@ Template.submit.helpers({
 		return Chapters.find().count() > 0;
 	}
 });
+
+Template.submitChapter.rendered = Init.dropdown;
 
 Template.submitChapter.helpers({
 	newChapters: function() {
@@ -196,40 +240,41 @@ Template.submitChapter.helpers({
 Template.submitChapter.events({
 	'submit form': function(e) {
 		e.preventDefault();
-		Errors.cleanAll(); // remove previous form errors
-		var t = $(e.target);
+		FormErrors.hide(e.target);
+		var $t = $(e.target);
 
-		var title = t.find('[name=title]').val();
+		var title = $t.find('[name=title]').val();
 
-		if(!title) { // client side erorr checks
-			Errors.throw("New chapter needs a title.");
+		if(!title) {
+			FormErrors.show(e.target, 422, "Chapter needs a title.");
 			return;
 		}
 
-		var chapterNumber = parseInt(t.find('[name=chapter]').val(), 10);
+		var c = $t.find('[name=chapter]').val();
+		c = parseInt(c, 10);
 
-		if(!chapterNumber) {
-			Errors.throw("New chapter needs a number.");
+		if(!c) {
+			FormErrors.show(e.target, 422, "Chapter needs a number.");
 			return;
 		}
 
-		var file = t.find('[name=file]')[0].files[0];
+		var file = $t.find('[name=file]')[0].files[0];
 
-		if(!file || !isImage(file.type)) { // client side error checks
-			Errors.throw("New chapter cover needs an image.");
+		if(!file || !isImage(file.type)) {
+			FormErrors.show(e.target, 422, "Chapter cover needs an image.");
 			return;
 		}
 
 		var fileId = Images.storeFile(file);
 
 		if(!fileId) {
-			Errors.throw("Problem uploading image :(");
+			FormErrors.show(e.target, ":(", "Problem uploading image.");
 			return;
 		} else
-			Errors.throw("Uploading image.", "info");
+			FormErrors.show(e.target, ":)", "Uploading your image now.", 'info');
 
 		var chapter = {
-			chapter: chapterNumber,
+			chapter: c,
 			title: title,
 			type: file.type,
 			fileId: fileId
@@ -243,7 +288,8 @@ Template.submitChapter.events({
 				Meteor.clearTimeout(timer);
 				Meteor.call('chapter', chapter, function(error, c) {
 					if(error) {
-						Errors.throw(error.reason);
+						FormErrors.show(e.target, error.error, error.reason);
+						Images.remove(fileId);
 					} else
 						Router.go('chapter', { chapter: c });
 				});
@@ -251,6 +297,8 @@ Template.submitChapter.events({
 		}, 1000);
 	}
 });
+
+Template.submitPage.rendered = Init.dropdown;
 
 Template.submitPage.helpers({
 	chapters: function() {
@@ -261,33 +309,31 @@ Template.submitPage.helpers({
 Template.submitPage.events({
 	'submit form': function(e) {
 		e.preventDefault();
-		Errors.cleanAll(); // remove previous form errors
-		var t = $(e.target);
+		FormErrors.hide(e.target);
+		var $t = $(e.target);
 
-		var c = t.find('[name=chapter]').val();
+		var c = $t.find('[name=chapter]').val();
+		c = parseInt(c, 10);
 
 		if(!c) {
-			Errors.throw("New page needs a chapter number.");
+			FormErrors.show(e.target, 422, "Page needs to belong to a chapter.");
 			return;
 		}
 
-		c = c.match(/^\d+/)[0];
-		c = parseInt(c, 10);
+		var file = $t.find('[name=file]')[0].files[0];
 
-		var file = t.find('[name=file]')[0].files[0];
-
-		if(!file || !isImage(file.type)) { // client side error checks
-			Errors.throw("New page needs an image.");
+		if(!file || !isImage(file.type)) {
+			FormErrors.show(e.target, 422, "Page needs to be an image.");
 			return;
 		}
 
 		var fileId = Images.storeFile(file);
 
 		if(!fileId) {
-			Errors.throw("Problem uploading image :(");
+			FormErrors.show(e.target, ":(", "Problem uploading image.");
 			return;
 		} else
-			Errors.throw("Uploading image.", "info");
+			FormErrors.show(e.target, ":)", "Uploading your image now.", 'info');
 
 		Session.set("uploadId", fileId);
 
@@ -297,8 +343,7 @@ Template.submitPage.events({
 			fileId: fileId
 		};
 
-		var test = Images.findOne(fileId);
-		console.log(test);
+		Images.findOne(fileId);
 
 		var image;
 		var timer = Meteor.setInterval(function() {
@@ -309,7 +354,7 @@ Template.submitPage.events({
 				Meteor.call('page', page, function(error, r) {
 					Session.set("uploadId", null);
 					if(error) {
-						Errors.throw(error.reason);
+						FormErrors.show(e.target, error.error, error.reason);
 						Images.remove(fileId);
 					} else
 						Router.go('page', { chapter: r.chapter, page: r.page });
@@ -319,40 +364,50 @@ Template.submitPage.events({
 	}
 });
 
-Template.submitSilly.events({
+Template.submitExtra.rendered = Init.dropdown;
+
+Template.submitExtra.events({
 	'submit form': function(e) {
 		e.preventDefault();
-		Errors.cleanAll(); // remove previous form errors
-		var t = $(e.target);
+		FormErrors.hide(e.target);
+		var $t = $(e.target);
 
-		var title = t.find('[name=title]').val();
+		var title = $t.find('[name=title]').val();
 
 		if(!title) { // client side erorr checks
-			Errors.throw("New silly needs a title.");
+			FormErrors.show(e.target, 422, "Extra needs a title.");
 			return;
 		}
 
-		var file = t.find('[name=file]')[0].files[0];
+		var file = $t.find('[name=file]')[0].files[0];
 
 		if(!file || !isImage(file.type)) { // client side error checks
-			Errors.throw("Silly needs to be an image.");
+			FormErrors.show(e.target, 422, "Extra needs to be an image.");
+			return;
+		}
+
+		var type = $t.find('[name=type]').val();
+
+		if(!type) {
+			FormErrors.show(e.target, 422, "Extra needs a type.");
 			return;
 		}
 
 		var fileId = Images.storeFile(file);
 
 		if(!fileId) {
-			Errors.throw("Problem uploading image :(");
+			FormErrors.show(e.target, ":(", "Problem uploading image.");
 			return;
 		} else
-			Errors.throw("Uploading image.", "info");
+			FormErrors.show(e.target, ":)", "Uploading your image now.", 'info');
 
 		Session.set("uploadId", fileId);
 
-		var silly = {
+		var extra = {
 			title: title,
-			type: file.type,
-			fileId: fileId
+			fileType: file.type,
+			fileId: fileId,
+			type: type
 		};
 
 		var image;
@@ -361,13 +416,13 @@ Template.submitSilly.events({
 
 			if(image && image.complete) {
 				Meteor.clearTimeout(timer);
-				Meteor.call('silly', silly, function(error, r) {
+				Meteor.call('extra', extra, function(error, r) {
 					Session.set("uploadId", null);
 					if(error) {
-						Errors.throw(error.reason);
+						FormErrors.show(e.target, error.error, error.reason);
 						Images.remove(fileId);
 					} else
-						Router.go('sillies', { number: r });
+						Router.go('extras', { number: r });
 				});
 			}
 		}, 1000);
@@ -377,13 +432,13 @@ Template.submitSilly.events({
 Template.submitNews.events({
 	'submit form': function(e) {
 		e.preventDefault();
-		Errors.cleanAll(); // remove previous form errors
+		FormErrors.hide(e.target);
 		var t = $(e.target);
 
 		var content = t.find('[name=content]').val();
 
 		if(!content) { // client side erorr checks
-			Errors.throw("New news needs content.");
+			FormErrors.show(e.target, 422, "News needs content.");
 			return;
 		}
 
@@ -393,9 +448,89 @@ Template.submitNews.events({
 
 		Meteor.call('news', news, function(error) {
 			if(error)
-				Errors.throw(error.reason);
+				FormErrors.show(e.target, error.error, error.reason);
 			else
 				Router.go('news');
+		});
+	}
+});
+
+Template.submitExtra.rendered = Init.dropdown;
+
+Template.submitDefaultTime.helpers({
+	days: function() {
+		return ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+	},
+	hours: function() {
+		return ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
+	},
+	minutes: function() {
+		return ['00', '15', '30', '45'];
+	},
+	meridiem: function() {
+		return ['am', 'pm'];
+	},
+	hasTime: function() {
+		var user = Meteor.user();
+		return user && user.postTime;
+	},
+	userDay: function() {
+		return Meteor.user().postTime.day;
+	},
+	userTime: function() {
+		var time = Meteor.user().postTime;
+		return time.hour + ':' + (time.minute === 0 ? '00' : time.minute) + ' ' + time.meridiem;
+	}
+});
+
+Template.submitDefaultTime.events({
+	'submit form': function(e) {
+		e.preventDefault();
+		FormErrors.hide(e.target);
+		var $t = $(e.target);
+
+		var days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+		var day = $t.find('[name=day]').val();
+
+		if(!_.contains(days, day)) {
+			FormErrors.show(e.target, 422, "Time needs a day.");
+			return;
+		}
+
+		var hours = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
+		var hour = $t.find('[name=hour]').val();
+
+		if(!_.contains(hours, hour)) {
+			FormErrors.show(e.target, 422, "Time needs an hour.");
+			return;
+		}
+
+		var minutes = ['00', '15', '30', '45'];
+		var minute = $t.find('[name=minute]').val();
+
+		if(!_.contains(minutes, minute)) {
+			FormErrors.show(e.target, 422, "Time needs minutes.");
+			return;
+		}
+
+		var meridiems = ['am', 'pm'];
+		var meridiem = $t.find('[name=meridiem]').val();
+
+		if(!_.contains(meridiems, meridiem)) {
+			FormErrors.show(e.target, 422, "Time needs a meridiem.");
+			return;
+		}
+
+		var time = {
+			day: day,
+			hour: hour,
+			minute: minute,
+			meridiem: meridiem
+		};
+
+		Meteor.call('time', time, function(error) {
+			if(error) FormErrors.show(e.target, error.error, error.reason);
+			else FormErrors.show(e.target, ":)", "Default time set.", 'info');
 		});
 	}
 });
@@ -431,8 +566,8 @@ Template.edit.helpers({
 			fields: { page: 1, fileId: 1 }
 		});
 	},
-	isSillies: function() {
-		return Sillies.find().count() > 0;
+	isExtras: function() {
+		return Extras.find().count() > 0;
 	}
 });
 
@@ -645,30 +780,30 @@ Template.editPage.events({
 	}
 });
 
-Template.editSilly.rendered = function() {
+Template.editExtra.rendered = function() {
 	$('.editable').editable();
 	this.originalURL = $('.editImage').attr('src');
 };
 
-Template.editSilly.events({
+Template.editExtra.events({
 	'click #btn-update': function(e) {
 		var updateCall = function(thing) {
-			Meteor.call('updateSilly', thing, function(error, result) {
+			Meteor.call('updateExtra', thing, function(error, result) {
 				if(error)
 					Errors.throw(error.reason);
 				else
-					Router.go('sillies', {number: result});
+					Router.go('extras', {number: result});
 			});
 		};
 
 		var wait = false;
-		var silly = {
+		var extra = {
 			number: this.number,
 		};
 
 		var $title = $('span[name=title]');
 		if($title.hasClass("editable-unsaved")) {
-			_.extend(silly, {
+			_.extend(extra, {
 				title: $title.text()
 			});
 		}
@@ -686,7 +821,7 @@ Template.editSilly.events({
 				Session.set("uploadId", fileId);
 				wait = true;
 				Errors.throw("Uploading image.", "info");
-				_.extend(silly, {
+				_.extend(extra, {
 					type: file.type,
 					fileId: fileId
 				});
@@ -699,11 +834,11 @@ Template.editSilly.events({
 				image = Images.findOne(fileId);
 				if(image && image.complete) {
 					Meteor.clearTimeout(timer);
-					updateCall(silly);
+					updateCall(extra);
 				}
 			}, 1000);
 		} else {
-			updateCall(silly);
+			updateCall(extra);
 		}
 	},
 	'click #btn-remove': function(e) {
@@ -713,12 +848,12 @@ Template.editSilly.events({
 	},
 	'click #confirm-remove': function(e) {
 		var n = this.number;
-		Meteor.call('deleteSilly', n, function(error) {
+		Meteor.call('deleteExtra', n, function(error) {
 			if(error)
 				Errors.throw(error.reason);
 			else {
-				Errors.throw("Silly " + n + " removed.", "info");
-				Router.go('sillies');
+				Errors.throw("Extra " + n + " removed.", "info");
+				Router.go('extras');
 			}
 		});
 	},
@@ -768,6 +903,9 @@ Template.disqus.rendered = function() {
 	}
 };
 
+
+
+
 Handlebars.registerHelper('getFile', function() {
 	return Images.findOne(this.fileId);
 });
@@ -813,4 +951,16 @@ Handlebars.registerHelper('truncate', function(str, length, omission) {
 	}
 
 	return str;
+});
+
+Handlebars.registerHelper('user', function() {
+	return Meteor.user() && Meteor.user().username;
+});
+
+Handlebars.registerHelper('whichExtra', function() {
+	var t = this.type;
+	if(t === 'oneshot')	return 'Oneshots';
+	else if(t === 'gallery') return 'Gallery';
+	else if(t === 'character') return 'Characters';
+	else if(t === 'all') return 'Extras';
 });

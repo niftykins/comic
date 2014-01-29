@@ -16,7 +16,7 @@
 					{{yield}}
 				</div>
 				<div class="col-md-3 side-panel">
-					{{> sillyHighlight}}
+					{{> extraHighlight}}
 					{{> newsFeed}}
 				</div>
 			</div>
@@ -41,15 +41,15 @@
 </template>
 
 <template name="header">
-	<div class="ui inverted menu">
-		<div class="visible-xs ui fluid dropdown link item">
+	<div class="ui inverted main menu">
+		<div class="show xs ui fluid dropdown link item">
 			<i class="list pull-right icon"></i>
 			<div class="text">Menu</div>
 			<div class="menu fluid">
 				{{> menuItems}}
 			</div>
 		</div>
-		<div class="hidden-xs">
+		<div class="hide xs">
 			{{> menuItems}}
 		</div>
 	</div>
@@ -63,25 +63,25 @@
 		<i class="archive icon"></i>Archive
 	</a>
 
-	<div class="visible-xs">
-		<a class="{{active 'oneshots'}} item" href="/extras">
+	<div class="show xs">
+		<a class="{{active 'oneshots'}} item" href="/extras/oneshot">
 			<i class="magic icon"></i>Oneshots
 		</a>
-		<a class="{{active 'gallery'}} item" href="/extras">
+		<a class="{{active 'gallery'}} item" href="/extras/gallery">
 			<i class="magic icon"></i>Gallery
 		</a>
-		<a class="{{active 'characters'}} item" href="/extras">
+		<a class="{{active 'characters'}} item" href="/extras/character">
 			<i class="magic icon"></i>Characters
 		</a>
 	</div>
 
-	<div class="hidden-xs ui dropdown link item">
+	<div class="hide xs ui dropdown link item {{active 'extras'}}">
 		<i class="magic icon"></i>
-		<div class="text">Extras</div>
+		Extras
 		<div class="menu fluid">
-			<a class="{{active 'oneshots'}} item" href="/extras">Oneshots</a>
-			<a class="{{active 'gallery'}} item" href="/extras">Gallery</a>
-			<a class="{{active 'characters'}} item" href="/extras">Characters</a>
+			<a class="{{active 'oneshots'}} item" href="/extras/oneshot">Oneshots</a>
+			<a class="{{active 'gallery'}} item" href="/extras/gallery">Gallery</a>
+			<a class="{{active 'characters'}} item" href="/extras/character">Characters</a>
 		</div>
 	</div>
 
@@ -97,7 +97,11 @@
 		</a>
 	{{/if}}
 
-	<a class="right item">{{loginButtons}}</a>
+	{{#if user}}
+		<a href="/sign-out" class="right item">{{user}}</a>
+	{{else}}
+		<a href="/sign-in" class="right item">sign in</a>
+	{{/if}}
 </template>
 
 <template name="loading">
@@ -152,11 +156,11 @@
 	</div>
 </template>
 
-<template name="sillyHighlight">
-	<div class="silly-highlight ui segment">
-		{{#with silly}}
-			<h4>Latest Silly <small>{{title}}</small></h4>
-			<a class="highlight-image rounded" style="background-image:url({{cfsFileUrl 'default' file=getFile}});" href="{{pathFor 'sillies'}}"></a>
+<template name="extraHighlight">
+	<div class="extra-highlight ui segment">
+		{{#with extra}}
+			<h4>Latest Extra <small>{{title}}</small></h4>
+			<a class="highlight-image rounded" style="background-image:url({{cfsFileUrl 'default' file=getFile}});" href="{{pathFor 'extras'}}"></a>
 		{{/with}}
 	</div>
 </template>
@@ -263,12 +267,12 @@
 		<img class="ui centered rounded image" src='{{cfsFileUrl "default" file=getFile}}'>
 
 		<div class="ui horizontal icon divider">
-			<i class="large dark comment icon"></i>
+			<i class="large dark comment icon" 
+				data-content="Click to toggle comments."
+				data-toggle="collapse" data-target="#disqus_thread"></i>
 		</div>
 
-		{{#constant}}
-			{{> disqus}}
-		{{/constant}}
+		{{> disqus}}
 	</div>
 </template>
 
@@ -298,67 +302,68 @@
 	</div>
 </template>
 
-<template name="sillyArrows">
+<template name="extraArrows">
 	<div class="arrows unselectable">
 		{{#if notFirst}}
 			{{#with first}}
-				<a href="{{pathFor 'sillies'}}"><img class="left" src="/public/images/fastarrow.png"></a>
+				<a href="{{pathFor 'extras'}}"><img class="left" src="/public/images/fastarrow.png"></a>
 			{{/with}}
 
 			{{#with previous}}
-				<a href="{{pathFor 'sillies'}}"><img  class="left" src="/public/images/arrow.png"></a>
+				<a href="{{pathFor 'extras'}}"><img  class="left" src="/public/images/arrow.png"></a>
 			{{/with}}
 		{{/if}}
 
-		<a href="/sillies" class="btn btn-default">Sillies</a>
+		<a href="/extras/{{type}}" class="btn btn-default">{{whichExtra}}</a>
 
 		{{#if notLast}}
 			{{#with next}}
-				<a href="{{pathFor 'sillies'}}"><img  class="right" src="/public/images/arrow.png"></a>
+				<a href="{{pathFor 'extras'}}"><img  class="right" src="/public/images/arrow.png"></a>
 			{{/with}}
 
 			{{#with last}}
-				<a href="{{pathFor 'sillies'}}"><img class="right" src="/public/images/fastarrow.png"></a>
+				<a href="{{pathFor 'extras'}}"><img class="right" src="/public/images/fastarrow.png"></a>
 			{{/with}}
 		{{/if}}
 	</div>
 </template>
 
-<template name="sillies">
+<template name="extras">
 	<div class="ui segment">
-		<h3>Sillies</h3>
+		<h3>{{whichExtra}}</h3>
 
 		<div class="ui variable items">
-			{{#each sillies}}
-				{{> sillyItem}}
+			{{#each extras}}
+				{{> extraItem}}
 			{{/each}}
 		</div>
 	</div>
 </template>
 
-<template name="sillyItem">
-	<a href="{{pathFor 'sillies'}}" class="item">
+<template name="extraItem">
+	<a href="{{pathFor 'extras'}}" class="item">
 		<div class="ui rounded image">
 			<img src='{{cfsFileUrl "square" file=getFile}}'>
 		</div>
 		<div class="content">
-			<div class="name">Silly {{number}}</div>
+			<div class="name">Extra {{number}}</div>
 		</div>
 	</a>
 </template>
 
-<template name="silly">
+<template name="extra">
 	<div class="page ui segment">
 		{{#if isAdmin}}
 			<div class="edit-buttons pull-right">
-				<a href="{{pathFor 'editSilly'}}" class="btn btn-primary">Edit</a>
+				<a href="{{pathFor 'editExtra'}}" class="btn btn-primary">Edit</a>
 			</div>
 		{{/if}}
 
-		<h3>Silly {{number}}: {{title}}</h3>
+		<h3>Extra {{number}}: {{title}}</h3>
 		<p>By {{author}}</p>
 		<p>{{timeAgo posted}}</p>
-		{{> sillyArrows}}
+		<p>{{type}}</p>
+		{{> extraArrows}}
 
 		<img class="ui centered rounded image" src='{{cfsFileUrl "default" file=getFile}}'>
 	</div>
@@ -366,87 +371,219 @@
 
 <template name="submit">
 	{{> progressBar}}
+	{{> submitDefaultTime}}
 	{{> submitChapter}}
-	<br>
 	{{#if isChapters}}
 		{{> submitPage}}
 	{{/if}}
-	<br>
-	{{> submitSilly}}
-	<br>
+	{{> submitExtra}}
 	{{> submitNews}}
 </template>
 
 <template name="submitChapter">
-	<form class="well submit-new form-horizontal" id="submit-page">
-		<div class="form-group">
-			<label class="form-label" for="chapter">New chapter</label>
-			<select name="chapter" class="form-control">
-				{{#each newChapters}}<option>{{this}}</option>{{/each}}
-			</select>
+	<form class="ui form segment">
+		<div class="header">Chapter</div>
+
+		<div class="ui error message">
+			<i class="remove icon"></i>
+			<div class="header"></div>
+			<p class="message"></p>
 		</div>
 
-		<div class="form-group">
-			<input name="title" type="text" value="" class="form-control" placeholder="chapter title">
+		<div class="field">
+			<div class="ui selection dropdown">
+				<input type="hidden" name="chapter">
+				<div class="default text">New Chapter</div>
+				<i class="dropdown icon"></i>
+				<div class="menu">
+					{{#each newChapters}}
+						<div class="item" data-value="{{this}}">{{this}}</div>
+					{{/each}}
+				</div>
+			</div>
 		</div>
 
-		<div class="form-group">
-			<label for="file">Cover Image</label>
-			<input type="file" name="file">
+		<div class="field">
+			<div class="ui input">
+				<input type="text" name="title" placeholder="Title" value="">
+			</div>
 		</div>
 
-		<div class="form-group">
-			<input type="submit" value="Submit" class="btn btn-primary">
+		<div class="field">
+			<div class="ui input">
+				<input type="file" name="file">
+			</div>
 		</div>
+
+		<button class="ui blue submit button" type="submit">Submit</button>
 	</form>
+
 </template>
 
 <template name="submitPage">
-	<form class="well submit-new form-horizontal" id="submit-page">
-		<div class="form-group">
-			<label class="form-label" for="chapter">For chapter</label>
-			<select name="chapter" class="form-control">
-				{{#each chapters}}<option>{{chapter}} - {{title}}</option>{{/each}}
-			</select>
+	<form class="ui form segment">
+		<div class="header">Page</div>
+
+		<div class="ui error message">
+			<i class="remove icon"></i>
+			<div class="header"></div>
+			<p class="message"></p>
 		</div>
 
-		<div class="form-group">
-			<label for="file">Comic Image</label>
-			<input type="file" name="file">
+		<div class="field">
+			<div class="ui selection dropdown">
+				<input type="hidden" name="chapter">
+				<div class="default text">For chapter</div>
+				<i class="dropdown icon"></i>
+				<div class="menu">
+					{{#each chapters}}
+						<div class="item" data-value="{{chapter}}">
+							{{chapter}} - {{title}}
+						</div>
+					{{/each}}
+				</div>
+			</div>
 		</div>
 
-		<div class="form-group">
-			<input type="submit" value="Submit" class="btn btn-primary">
+		<div class="field">
+			<div class="ui input">
+				<input type="file" name="file">
+			</div>
 		</div>
+
+		<button class="ui blue submit button" type="submit">Submit</button>
 	</form>
 </template>
 
-<template name="submitSilly">
-	<form class="well submit-new form-horizontal" id="submit-silly">
-		<div class="form-group">
-			<input name="title" type="text" value="" class="form-control" placeholder="silly title">
+<template name="submitExtra">
+	<form class="ui form segment">
+		<div class="header">Extra</div>
+
+		<div class="ui error message">
+			<i class="remove icon"></i>
+			<div class="header"></div>
+			<p class="message"></p>
 		</div>
 
-		<div class="form-group">
-			<label for="file">Silly Image</label>
-			<input type="file" name="file">
+		<div class="field">
+			<div class="ui input">
+				<input type="text" name="title" placeholder="Title" value="">
+			</div>
 		</div>
 
-		<div class="form-group">
-			<input type="submit" value="Submit" class="btn btn-primary">
+		<div class="field">
+			<div class="ui input">
+				<input type="file" name="file">
+			</div>
 		</div>
+
+		<div class="field">
+			<div class="ui selection dropdown">
+				<input type="hidden" name="type">
+				<div class="default text">Type</div>
+				<i class="dropdown icon"></i>
+				<div class="menu">
+					<div class="item" data-value="oneshot">Oneshot</div>
+					<div class="item" data-value="gallery">Gallery</div>
+					<div class="item" data-value="character">Character</div>
+				</div>
+			</div>
+		</div>
+
+		<button class="ui blue submit button" type="submit">Submit</button>
 	</form>
 </template>
 
 <template name="submitNews">
-	<form class="well submit-new form-horizontal" id="submit-news">
-		<div class="form-group">
-			<textarea class="form-control" rows="5" name="content" placeholder="your news"></textarea>
+	<form class="ui form segment">
+		<div class="header">News</div>
+
+		<div class="ui error message">
+			<i class="remove icon"></i>
+			<div class="header"></div>
+			<p class="message"></p>
 		</div>
 
-		<div class="form-group">
-			<input type="submit" value="Submit" class="btn btn-primary">
+		<div class="field">
+			<textarea rows="5" name="content" placeholder="Your news item"></textarea>
 		</div>
+
+		<button class="ui blue submit button" type="submit">Submit</button>
+	</form>
+</template>
+
+<template name="submitDefaultTime">
+	<form class="ui form segment">
+		<div class="header">Default Comic Time</div>
+		{{#if hasTime}}
+			<p>Your current posting time is every <span class="capitalise">{{userDay}}</span> at {{userTime}} EST.</p>
+		{{else}}
+			<p>You do not have a default post time yet. Time is in EST (GMT +5).</p>
+		{{/if}}
+
+		{{#constant}}
+		<div class="ui error message">
+			<i class="remove icon"></i>
+			<div class="header"></div>
+			<p class="message"></p>
+		</div>
+		{{/constant}}
+
+		<div class="ui fields">
+			<div class="field">
+				<div class="ui selection dropdown">
+					<input type="hidden" name="day">
+					<div class="default text capitalise">Day</div>
+					<i class="dropdown icon"></i>
+					<div class="menu">
+						{{#each days}}
+							<div class="item capitalise" data-value="{{this}}">{{this}}</div>
+						{{/each}}
+					</div>
+				</div>
+			</div>
+
+			<div class="field">
+				<div class="ui selection dropdown">
+					<input type="hidden" name="hour">
+					<div class="default text">Hour</div>
+					<i class="dropdown icon"></i>
+					<div class="menu">
+						{{#each hours}}
+							<div class="item" data-value="{{this}}">{{this}}</div>
+						{{/each}}
+					</div>
+				</div>
+			</div>
+
+			<div class="field">
+				<div class="ui selection dropdown">
+					<input type="hidden" name="minute">
+					<div class="default text">Minute</div>
+					<i class="dropdown icon"></i>
+					<div class="menu">
+						{{#each minutes}}
+							<div class="item" data-value="{{this}}">{{this}}</div>
+						{{/each}}
+					</div>
+				</div>
+			</div>
+
+			<div class="field">
+				<div class="ui selection dropdown">
+					<input type="hidden" name="meridiem">
+					<div class="default text">Meridiem</div>
+					<i class="dropdown icon"></i>
+					<div class="menu">
+						{{#each meridiem}}
+							<div class="item" data-value="{{this}}">{{this}}</div>
+						{{/each}}
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<button class="ui blue submit button" type="submit">Submit</button>
 	</form>
 </template>
 
@@ -556,8 +693,8 @@
 	</div>
 </template>
 
-<template name="editSilly">
-	<div class="silly well">
+<template name="editExtra">
+	<div class="extra well">
 		{{> progressBar}}
 
 		<div class="edit-buttons pull-right">
@@ -565,7 +702,7 @@
 			<div id="btn-update" class="btn btn-primary" data-loading-text="Updating">Update</div>
 		</div>
 
-		<h3>Edit Silly {{number}}: <span name="title" class="editable" data-type='text'>{{title}}</span></h3>
+		<h3>Edit Extra {{number}}: <span name="title" class="editable" data-type='text'>{{title}}</span></h3>
 		<p>By {{author}}</p>
 		<P>{{timeAgo posted}}</P>
 
@@ -589,7 +726,7 @@
 					<h4 class="modal-title">Remove</h4>
 				</div>
 				<div class="modal-body">
-					<p>Are you sure you want to remove silly: {{number}} - {{title}}?</p>
+					<p>Are you sure you want to remove extra: {{number}} - {{title}}?</p>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
