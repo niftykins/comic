@@ -66,13 +66,42 @@ var checkUser = function(user) {
 	return true;
 };
 
+calcPostTime = function calcPostTime() {
+	var time = Meteor.user().postTime;
+	var now = moment.utc().zone(5);
+	var then = moment.utc().zone(5);
+	var hour = time.meridiem === 'pm' ? time.hour + 12 : time.hour;
+	var days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+	var string = "dddd, MMMM Do YYYY, h:mm:ss a";
+
+	//console.log('Made:', now.format(string));
+
+	then.hour(hour);
+	then.minute(time.minute);
+	then.second(0);
+	then.millisecond(0);
+
+	var day = _.indexOf(days, time.day);
+
+	if(now.diff(then.day(day)) <= 0) {} // this week
+	else then.day(7 + day); // next week
+
+	var diff = then.diff(now);
+
+	//console.log('For:', then.format(string));
+	//console.log('Difference:', diff);
+
+	return { diff: diff, when: then.valueOf() };
+};
+
 // pages
 Meteor.methods({
 	page: function(attrs) {
 		check(attrs, {
 			chapter: Match.Integer,
 			type: String,
-			fileId: String
+			fileId: String,
+			postNow: Match.Optional(Boolean)
 		});
 
 		var user = Meteor.user();
@@ -83,16 +112,19 @@ Meteor.methods({
 		var chapter = Chapters.findOne({ chapter: attrs.chapter });
 
 		if(!chapter) // no chapter
-			throw new Meteor.Error(404, "Chapter doesn't exist.");
+			throw new Meteor.Error(404, "That chapter doesn't exist.");
 
 		if(!isImage(attrs.type)) {
 			Images.remove(attrs.fileId);
-			throw new Meteor.Error(422, "New page needs an image.");
+			throw new Meteor.Error(422, "Page needs an image.");
 		}
 
 		if(!attrs.fileId) {
 			throw new Meteor.Error(422, "Pretty sure your image upload broke.");
 		}
+
+		var postTime = 0;
+		if(attrs.postNow === false) postTime = calcPostTime();
 
 		var nextPage = chapter.pageCount + 1;
 
@@ -103,10 +135,23 @@ Meteor.methods({
 			chapter: attrs.chapter,
 			fileId: attrs.fileId,
 			page: nextPage,
-			posted: new Date().getTime()
+			posted: Date.now(),
+			submitted: Date.now(),
+			postTime: postTime.when
 		};
 
-		Pages.insert(page);
+		var pageId = Pages.insert(page);
+
+		if(Meteor.isServer) {
+			Meteor.setTimeout(function() {
+				Pages.update(pageId, {$set: {
+					posted: Date.now(),
+					postTime: 0
+				}});
+
+				logger('info', 'New Page timed post', page);
+			}, postTime.diff);
+		}
 
 		logger('info', 'New Page', page);
 
@@ -182,7 +227,7 @@ Meteor.methods({
 		}, {
 			$set: {
 				fileId: attrs.fileId,
-				updated: new Date().getTime()
+				updated: Date.now()
 			}
 		});
 
@@ -220,7 +265,7 @@ Meteor.methods({
 
 		if(!isImage(attrs.type)) {
 			Images.remove(attrs.fileId);
-			throw new Meteor.Error(422, "Chapter cover needs to be an image.");
+			throw new Meteor.Error(422, "Chapter cover needs an image.");
 		}
 
 		if(!attrs.fileId) {
@@ -234,7 +279,7 @@ Meteor.methods({
 			title: attrs.title,
 			fileId: attrs.fileId,
 			pageCount: -1,
-			posted: new Date().getTime()
+			posted: Date.now()
 		};
 
 		var chapterId = Chapters.insert(chapter);
@@ -278,7 +323,7 @@ Meteor.methods({
 			$set: {
 				fileId: attrs.fileId || chapter.fileId,
 				title: attrs.title || chapter.title,
-				updated: new Date().getTime()
+				updated: Date.now()
 			}
 		});
 
@@ -341,7 +386,7 @@ Meteor.methods({
 
 		if(!isImage(attrs.fileType)) {
 			Images.remove(attrs.fileId);
-			throw new Meteor.Error(422, "New page needs an image.");
+			throw new Meteor.Error(422, "Extra needs an image.");
 		}
 		
 		checkUser();
@@ -367,7 +412,7 @@ Meteor.methods({
 			authorId: user._id,
 			author: user.username,
 			number: nextExtra,
-			posted: new Date().getTime(),
+			posted: Date.now(),
 			fileId: attrs.fileId,
 			title: attrs.title,
 			type: attrs.type
@@ -411,7 +456,7 @@ Meteor.methods({
 			$set: {
 				fileId: attrs.fileId || extra.fileId,
 				title: attrs.title || extra.title,
-				updated: new Date().getTime()
+				updated: Date.now()
 			}
 		});
 
@@ -454,7 +499,7 @@ Meteor.methods({
 			author: user.username,
 			authorId: user._id,
 			content: attrs.content,
-			posted: new Date().getTime()
+			posted: Date.now()
 		};
 
 		News.insert(news);
@@ -507,5 +552,22 @@ Meteor.methods({
 		var user = Meteor.user();
 
 		Meteor.users.update(user._id, {$set: { postTime: time } });
+	}
+});
+
+// collapse form methods
+Meteor.methods({
+	collapseForm: function(which) {
+		check(which, String);
+
+		var user = Meteor.user();
+
+		if(!user) return;
+		if(!user.preferences) user.preferences = {};
+
+		var old = user.preferences[which];
+		var update = {};
+		update['preferences.' + which] = !old;
+		Meteor.users.update(user._id, {$set: update});
 	}
 });

@@ -7,6 +7,7 @@
 
 // blue rgba(74, 133, 172, 0.8)
 
+@import url(http://fonts.googleapis.com/css?family=Lato:400,700);
 
 body {
 	background: @bg-color;
@@ -41,15 +42,8 @@ body {
 
 
 // misc
-h1,
-h2,
-h3,
-h4,
-h5 {
-  font-family: "Source Sans Pro", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
-}
 body {
-	font-family: "Open Sans", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+	font-family: "Lato", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
 }
 a:hover {
 	text-decoration: none;
@@ -73,6 +67,20 @@ html {
 }
 .rounded {
 	border-radius: 0.3125em;
+}
+.ui.checkbox {
+	min-height: 0;
+	padding-left: 0;
+
+	& label {
+		padding-left: 1.5em;
+		&:after {
+			box-sizing: content-box;
+		}
+	}
+}
+input[type="checkbox"] {
+	box-sizing: content-box;
 }
 //device visibility
 .show {
@@ -152,7 +160,7 @@ html, body {
 
 
 // edit pages
-.edit .options select {
+.options select {
 	margin-bottom: 15px;
 }
 .new-image {
@@ -267,34 +275,43 @@ i.icon {
 
 
 //form
-.ui.form .header {
-	margin: 0em;
-	margin-bottom: 0.5em;
-	font-size: 1.33em;
-	font-weight: bold;
-}
-
-.ui.form .fields > .field {
-	padding-left: 1.5%;
-}
-
-.ui.form input[type="text"]:focus,
-.ui.form textarea:focus {
-  border-color: @bg-color;
-  -webkit-box-shadow: 0.3em 0 0 0 @icon-color inset;
-  box-shadow: 0.3em 0 0 0 @icon-color inset;
-}
-
-.ui.form .selection.dropdown {
-	&:hover {
-		.box-shadow(@bg-color) !important;
+.ui.form {
+	& form {
+		margin-top: 0.5em;
 	}
 
-	& > .menu {
-		.box-shadow(@bg-color);
+	& .header {
+		margin: 0em;
+		font-size: 1.33em;
+		font-weight: bold;
+
+		&.collapse {
+			display: block;
+			cursor: pointer;
+		}
+	}
+
+	& .fields > .field {
+		padding-left: 1.5%
+	}
+
+	& input[type="text"]:focus,
+	textarea:focus {
+		border-color: @bg-color;
+		-webkit-box-shadow: 0.3em 0 0 0 @icon-color inset;
+		box-shadow: 0.3em 0 0 0 @icon-color inset;
+	}
+
+	& .selection.dropdown {
+		&:hover {
+			.box-shadow(@bg-color) !important;
+		}
+
+		& > .menu {
+			.box-shadow(@bg-color);
+		}
 	}
 }
-
 
 
 //mixins

@@ -11,6 +11,8 @@
     "semantic-ui": {},
     "bootstrap-3": {},
     "x-editable-bootstrap3": {},
-    "accounts-entry": {}
+    "accounts-entry": {
+      "version": "0.4.4"
+    }
   }
 }

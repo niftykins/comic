@@ -4,6 +4,9 @@ var sort = { sort: ["chapter", "page"] };
 var Init = {
 	dropdown: function() {
 		$('.ui.dropdown').dropdown();
+	},
+	checkbox: function() {
+		$('.ui.checkbox').checkbox();
 	}
 };
 
@@ -211,7 +214,16 @@ Template.submit.helpers({
 	}
 });
 
-Template.submitChapter.rendered = Init.dropdown;
+var hideIn = function(which) {
+	var user = Meteor.user();
+	if(user && user.preferences && user.preferences[which])
+		$('#submit-'+which).removeClass('in');
+};
+
+Template.submitChapter.rendered = function() {
+	Init.dropdown();
+	hideIn('chapter');
+};
 
 Template.submitChapter.helpers({
 	newChapters: function() {
@@ -295,10 +307,17 @@ Template.submitChapter.events({
 				});
 			}
 		}, 1000);
+	},
+	'click .header.collapse': function(e) {
+		Meteor.call('collapseForm', 'chapter');
 	}
 });
 
-Template.submitPage.rendered = Init.dropdown;
+Template.submitPage.rendered = function() {
+	Init.dropdown();
+	Init.checkbox();
+	hideIn('page');
+};
 
 Template.submitPage.helpers({
 	chapters: function() {
@@ -327,6 +346,8 @@ Template.submitPage.events({
 			return;
 		}
 
+		var postNow = !!($t.find('[name=now]').filter(':checked').length);
+
 		var fileId = Images.storeFile(file);
 
 		if(!fileId) {
@@ -340,7 +361,8 @@ Template.submitPage.events({
 		var page = {
 			chapter: c,
 			type: file.type,
-			fileId: fileId
+			fileId: fileId,
+			postNow: postNow
 		};
 
 		Images.findOne(fileId);
@@ -361,10 +383,16 @@ Template.submitPage.events({
 				});
 			}
 		}, 1000);
+	},
+	'click .header.collapse': function(e) {
+		Meteor.call('collapseForm', 'page');
 	}
 });
 
-Template.submitExtra.rendered = Init.dropdown;
+Template.submitExtra.rendered = function() {
+	Init.dropdown();
+	hideIn('extra');
+};
 
 Template.submitExtra.events({
 	'submit form': function(e) {
@@ -382,7 +410,7 @@ Template.submitExtra.events({
 		var file = $t.find('[name=file]')[0].files[0];
 
 		if(!file || !isImage(file.type)) { // client side error checks
-			FormErrors.show(e.target, 422, "Extra needs to be an image.");
+			FormErrors.show(e.target, 422, "Extra needs be an image.");
 			return;
 		}
 
@@ -426,8 +454,15 @@ Template.submitExtra.events({
 				});
 			}
 		}, 1000);
+	},
+	'click .header.collapse': function(e) {
+		Meteor.call('collapseForm', 'extra');
 	}
 });
+
+Template.submitNews.rendered = function() {
+	hideIn('news');
+};
 
 Template.submitNews.events({
 	'submit form': function(e) {
@@ -452,10 +487,15 @@ Template.submitNews.events({
 			else
 				Router.go('news');
 		});
+	},
+	'click .header.collapse': function(e) {
+		Meteor.call('collapseForm', 'news');
 	}
 });
 
-Template.submitExtra.rendered = Init.dropdown;
+Template.submitDefaultTime.rendered = function() {
+	hideIn('time');
+};
 
 Template.submitDefaultTime.helpers({
 	days: function() {
@@ -532,6 +572,25 @@ Template.submitDefaultTime.events({
 			if(error) FormErrors.show(e.target, error.error, error.reason);
 			else FormErrors.show(e.target, ":)", "Default time set.", 'info');
 		});
+	},
+	'click .header.collapse': function(e) {
+		Meteor.call('collapseForm', 'time');
+	}
+});
+
+Template.estTime.created = function() {
+	this.timer = Meteor.setInterval(function() {
+		Session.set('estTime', moment.utc().zone(5).format('h:mm:ss a on dddd Do'));
+	}, 1000);
+};
+
+Template.estTime.destroyed = function() {
+	Meteor.clearInterval(this.timer);
+};
+
+Template.estTime.helpers({
+	time: function() {
+		return Session.get('estTime');
 	}
 });
 
@@ -904,7 +963,12 @@ Template.disqus.rendered = function() {
 };
 
 
+Handlebars.registerHelper('collapsed', function(which) {
+	var user = Meteor.user();
+	if(!user) return;
 
+	return user.preferences && user.preferences[which];
+});
 
 Handlebars.registerHelper('getFile', function() {
 	return Images.findOne(this.fileId);

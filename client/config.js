@@ -11,14 +11,9 @@ Meteor.startup(function() {
 		$.fn.dropdown.noConflict();
 	}
 
-	$.fn.dropdown.settings.performance = false;
-	$.fn.dropdown.settings.verbose = false;
-	$.fn.dropdown.settings.debug = false;
-	$.fn.transition.settings.performance = false;
-	$.fn.transition.settings.verbose = false;
-	$.fn.transition.settings.debug = false;
-
-	$.fn.popup.settings.debug = false;
-	$.fn.popup.settings.performance = false;
-	$.fn.popup.settings.verbose = false;
+	['dropdown', 'transition', 'popup', 'checkbox'].forEach(function(which) {
+		$.fn[which].settings.debug = false;
+		$.fn[which].settings.performance = false;
+		$.fn[which].settings.verbose = false;
+	});
 });

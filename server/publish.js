@@ -1,5 +1,8 @@
 Meteor.publish('pages', function() {
-	return Pages.find({}, {sort: { sort: ["chapter", "page"] }});
+	if(this.userId && Meteor.users.findOne(this.userId).admin)
+		return Pages.find({}, {sort: { sort: ["chapter", "page"] }});
+	else
+		return Pages.find({postTime: 0}, {sort: { sort: ["chapter", "page"] }});
 });
 
 Meteor.publish('chapters', function() {
@@ -19,7 +22,8 @@ Meteor.publish("userData", function() {
 	return Meteor.users.find({ _id: this.userId }, {
 		fields: {
 			postTime: 1,
-			admin: 1
+			admin: 1,
+			preferences: 1
 		}
 	});
 });

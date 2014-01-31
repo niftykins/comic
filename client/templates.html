@@ -288,7 +288,7 @@
 			{{/with}}
 		{{/if}}
 
-		<a href="{{pathFor 'page'}}" class="btn btn-default">Archive</a>
+		<a href="{{pathFor 'archive'}}" class="btn btn-default" style="{{#unless notFirst}}margin-left: 81px{{/unless}}  {{#unless notLast}}margin-right: 81px{{/unless}}">Archive</a>
 
 		{{#if notLast}}
 			{{#with next}}
@@ -314,7 +314,7 @@
 			{{/with}}
 		{{/if}}
 
-		<a href="/extras/{{type}}" class="btn btn-default">{{whichExtra}}</a>
+		<a href="/extras/{{type}}" class="btn btn-default" style="{{#unless notFirst}}margin-left: 81px{{/unless}}  {{#unless notLast}}margin-right: 81px{{/unless}}">{{whichExtra}}</a>
 
 		{{#if notLast}}
 			{{#with next}}
@@ -381,214 +381,241 @@
 </template>
 
 <template name="submitChapter">
-	<form class="ui form segment">
-		<div class="header">Chapter</div>
+	<div class="ui form segment">
+		<div class="header collapse" data-toggle="collapse" data-target="#submit-chapter">Chapter</div>
 
-		<div class="ui error message">
-			<i class="remove icon"></i>
-			<div class="header"></div>
-			<p class="message"></p>
-		</div>
+		<form id="submit-chapter" class="collapse in">
+			<div class="ui error message">
+				<i class="remove icon"></i>
+				<div class="header"></div>
+				<p class="message"></p>
+			</div>
 
-		<div class="field">
-			<div class="ui selection dropdown">
-				<input type="hidden" name="chapter">
-				<div class="default text">New Chapter</div>
-				<i class="dropdown icon"></i>
-				<div class="menu">
-					{{#each newChapters}}
-						<div class="item" data-value="{{this}}">{{this}}</div>
-					{{/each}}
+			<div class="field">
+				<div class="ui selection dropdown">
+					<input type="hidden" name="chapter">
+					<div class="default text">New Chapter</div>
+					<i class="dropdown icon"></i>
+					<div class="menu">
+						{{#each newChapters}}
+							<div class="item" data-value="{{this}}">{{this}}</div>
+						{{/each}}
+					</div>
 				</div>
 			</div>
-		</div>
 
-		<div class="field">
-			<div class="ui input">
-				<input type="text" name="title" placeholder="Title" value="">
+			<div class="field">
+				<div class="ui input">
+					<input type="text" name="title" placeholder="Title" value="">
+				</div>
 			</div>
-		</div>
 
-		<div class="field">
-			<div class="ui input">
-				<input type="file" name="file">
+			<div class="field">
+				<div class="ui input">
+					<input type="file" name="file">
+				</div>
 			</div>
-		</div>
 
-		<button class="ui blue submit button" type="submit">Submit</button>
-	</form>
-
+			<button class="ui blue submit button" type="submit">Submit</button>
+		</form>
+	</div>
 </template>
 
 <template name="submitPage">
-	<form class="ui form segment">
-		<div class="header">Page</div>
+	<div class="ui form segment">
+		<div class="header collapse" data-toggle="collapse" data-target="#submit-page">Page</div>
 
-		<div class="ui error message">
-			<i class="remove icon"></i>
-			<div class="header"></div>
-			<p class="message"></p>
-		</div>
+		<form id="submit-page" class="collapse in">
+			<div class="ui error message">
+				<i class="remove icon"></i>
+				<div class="header"></div>
+				<p class="message"></p>
+			</div>
 
-		<div class="field">
-			<div class="ui selection dropdown">
-				<input type="hidden" name="chapter">
-				<div class="default text">For chapter</div>
-				<i class="dropdown icon"></i>
-				<div class="menu">
-					{{#each chapters}}
-						<div class="item" data-value="{{chapter}}">
-							{{chapter}} - {{title}}
-						</div>
-					{{/each}}
+			<div class="field">
+				<div class="ui selection dropdown">
+					<input type="hidden" name="chapter">
+					<div class="default text">For chapter</div>
+					<i class="dropdown icon"></i>
+					<div class="menu">
+						{{#each chapters}}
+							<div class="item" data-value="{{chapter}}">
+								{{chapter}} - {{title}}
+							</div>
+						{{/each}}
+					</div>
 				</div>
 			</div>
-		</div>
 
-		<div class="field">
-			<div class="ui input">
-				<input type="file" name="file">
+			<div class="field">
+				<div class="ui input">
+					<input type="file" name="file">
+				</div>
 			</div>
-		</div>
 
-		<button class="ui blue submit button" type="submit">Submit</button>
-	</form>
+			<div class="field">
+				<div class="ui checkbox unselectable">
+					<input type="checkbox" name="now">
+					<label>Post now</label>
+				</div>
+			</div>
+
+			<button class="ui blue submit button" type="submit">Submit</button>
+		</form>
+	</div>
 </template>
 
 <template name="submitExtra">
-	<form class="ui form segment">
-		<div class="header">Extra</div>
+	<div class="ui form segment">
+		<div class="header collapse" data-toggle="collapse" data-target="#submit-extra">Extra</div>
 
-		<div class="ui error message">
-			<i class="remove icon"></i>
-			<div class="header"></div>
-			<p class="message"></p>
-		</div>
-
-		<div class="field">
-			<div class="ui input">
-				<input type="text" name="title" placeholder="Title" value="">
+		<form id="submit-extra" class="collapse in">
+			<div class="ui error message">
+				<i class="remove icon"></i>
+				<div class="header"></div>
+				<p class="message"></p>
 			</div>
-		</div>
 
-		<div class="field">
-			<div class="ui input">
-				<input type="file" name="file">
-			</div>
-		</div>
-
-		<div class="field">
-			<div class="ui selection dropdown">
-				<input type="hidden" name="type">
-				<div class="default text">Type</div>
-				<i class="dropdown icon"></i>
-				<div class="menu">
-					<div class="item" data-value="oneshot">Oneshot</div>
-					<div class="item" data-value="gallery">Gallery</div>
-					<div class="item" data-value="character">Character</div>
+			<div class="field">
+				<div class="ui input">
+					<input type="text" name="title" placeholder="Title" value="">
 				</div>
 			</div>
-		</div>
 
-		<button class="ui blue submit button" type="submit">Submit</button>
-	</form>
+			<div class="field">
+				<div class="ui input">
+					<input type="file" name="file">
+				</div>
+			</div>
+
+			<div class="field">
+				<div class="ui selection dropdown">
+					<input type="hidden" name="type">
+					<div class="default text">Type</div>
+					<i class="dropdown icon"></i>
+					<div class="menu">
+						<div class="item" data-value="oneshot">Oneshot</div>
+						<div class="item" data-value="gallery">Gallery</div>
+						<div class="item" data-value="character">Character</div>
+					</div>
+				</div>
+			</div>
+
+			<button class="ui blue submit button" type="submit">Submit</button>
+		</form>
+	</div>
 </template>
 
 <template name="submitNews">
-	<form class="ui form segment">
-		<div class="header">News</div>
+	<div class="ui form segment">
+		<div class="header collapse" data-toggle="collapse" data-target="#submit-news">News</div>
 
-		<div class="ui error message">
-			<i class="remove icon"></i>
-			<div class="header"></div>
-			<p class="message"></p>
-		</div>
+		<form id="submit-news" class="collapse in">
+			<div class="ui error message">
+				<i class="remove icon"></i>
+				<div class="header"></div>
+				<p class="message"></p>
+			</div>
 
-		<div class="field">
-			<textarea rows="5" name="content" placeholder="Your news item"></textarea>
-		</div>
+			<div class="field">
+				<textarea rows="5" name="content" placeholder="Your news item"></textarea>
+			</div>
 
-		<button class="ui blue submit button" type="submit">Submit</button>
-	</form>
+			<button class="ui blue submit button" type="submit">Submit</button>
+		</form>
+	</div>
 </template>
 
 <template name="submitDefaultTime">
-	<form class="ui form segment">
-		<div class="header">Default Comic Time</div>
-		{{#if hasTime}}
-			<p>Your current posting time is every <span class="capitalise">{{userDay}}</span> at {{userTime}} EST.</p>
-		{{else}}
-			<p>You do not have a default post time yet. Time is in EST (GMT +5).</p>
-		{{/if}}
+	<div class="ui form segment">
+		<div class="header collapse" data-toggle="collapse" data-target="#submit-time">Default Comic Time</div>
+		<div class="ui right red corner label">
+		   <i class="heart icon"></i>
+		 </div>
 
-		{{#constant}}
-		<div class="ui error message">
-			<i class="remove icon"></i>
-			<div class="header"></div>
-			<p class="message"></p>
-		</div>
-		{{/constant}}
+		<form id="submit-time" class="collapse in">
+			{{#isolate}}
+			{{#if hasTime}}
+				<p>Your current posting time is every <span class="capitalise">{{userDay}}</span> at {{userTime}} EST.</p>
+			{{else}}
+				<p>You do not have a default post time yet. Time is in EST (GMT +5).</p>
+			{{/if}}
+			{{/isolate}}
+			{{#isolate}}
+				<p>It is currently {{> estTime}} EST.</p>
+			{{/isolate}}
 
-		<div class="ui fields">
-			<div class="field">
-				<div class="ui selection dropdown">
-					<input type="hidden" name="day">
-					<div class="default text capitalise">Day</div>
-					<i class="dropdown icon"></i>
-					<div class="menu">
-						{{#each days}}
-							<div class="item capitalise" data-value="{{this}}">{{this}}</div>
-						{{/each}}
+			<div class="ui error message">
+				<i class="remove icon"></i>
+				<div class="header"></div>
+				<p class="message"></p>
+			</div>
+
+			<div class="ui fields">
+				<div class="field">
+					<div class="ui selection dropdown">
+						<input type="hidden" name="day">
+						<div class="default text capitalise">Day</div>
+						<i class="dropdown icon"></i>
+						<div class="menu">
+							{{#each days}}
+								<div class="item capitalise" data-value="{{this}}">{{this}}</div>
+							{{/each}}
+						</div>
+					</div>
+				</div>
+
+				<div class="field">
+					<div class="ui selection dropdown">
+						<input type="hidden" name="hour">
+						<div class="default text">Hour</div>
+						<i class="dropdown icon"></i>
+						<div class="menu">
+							{{#each hours}}
+								<div class="item" data-value="{{this}}">{{this}}</div>
+							{{/each}}
+						</div>
+					</div>
+				</div>
+
+				<div class="field">
+					<div class="ui selection dropdown">
+						<input type="hidden" name="minute">
+						<div class="default text">Minute</div>
+						<i class="dropdown icon"></i>
+						<div class="menu">
+							{{#each minutes}}
+								<div class="item" data-value="{{this}}">{{this}}</div>
+							{{/each}}
+						</div>
+					</div>
+				</div>
+
+				<div class="field">
+					<div class="ui selection dropdown">
+						<input type="hidden" name="meridiem">
+						<div class="default text">Meridiem</div>
+						<i class="dropdown icon"></i>
+						<div class="menu">
+							{{#each meridiem}}
+								<div class="item" data-value="{{this}}">{{this}}</div>
+							{{/each}}
+						</div>
 					</div>
 				</div>
 			</div>
 
-			<div class="field">
-				<div class="ui selection dropdown">
-					<input type="hidden" name="hour">
-					<div class="default text">Hour</div>
-					<i class="dropdown icon"></i>
-					<div class="menu">
-						{{#each hours}}
-							<div class="item" data-value="{{this}}">{{this}}</div>
-						{{/each}}
-					</div>
-				</div>
-			</div>
+			<button class="ui blue submit button" type="submit">Submit</button>
+		</form>
+	</div>
+</template>
 
-			<div class="field">
-				<div class="ui selection dropdown">
-					<input type="hidden" name="minute">
-					<div class="default text">Minute</div>
-					<i class="dropdown icon"></i>
-					<div class="menu">
-						{{#each minutes}}
-							<div class="item" data-value="{{this}}">{{this}}</div>
-						{{/each}}
-					</div>
-				</div>
-			</div>
-
-			<div class="field">
-				<div class="ui selection dropdown">
-					<input type="hidden" name="meridiem">
-					<div class="default text">Meridiem</div>
-					<i class="dropdown icon"></i>
-					<div class="menu">
-						{{#each meridiem}}
-							<div class="item" data-value="{{this}}">{{this}}</div>
-						{{/each}}
-					</div>
-				</div>
-			</div>
-		</div>
-
-		<button class="ui blue submit button" type="submit">Submit</button>
-	</form>
+<template name="estTime">
+	{{time}}
 </template>
 
 <template name="edit">
-	<div class="edit">
+	<div class="ui segment">
 		<div class="options">
 			<select name="chapter" class="form-control">
 				{{#each selectChapters}}<option value="{{chapter}}">{{chapter}} - {{title}}</option>{{/each}}
@@ -605,7 +632,7 @@
 </template>
 
 <template name="editPage">
-	<div class="page well">
+	<div>
 		{{> progressBar}}
 
 		<div class="edit-buttons pull-right">
@@ -651,7 +678,7 @@
 </template>
 
 <template name="editChapter">
-	<div class="well">
+	<div>
 		<div class="edit-buttons pull-right">
 			<div id="btn-remove" class="unselectable btn btn-danger">Remove</div>
 			<div id="btn-update" class="btn btn-primary">Update</div>
@@ -694,7 +721,7 @@
 </template>
 
 <template name="editExtra">
-	<div class="extra well">
+	<div class="ui segment">
 		{{> progressBar}}
 
 		<div class="edit-buttons pull-right">
@@ -871,5 +898,5 @@
 </template>
 
 <template name="disqus">
-	<div id="disqus_thread"></div>
+	<div id="disqus_thread" class="collapse in"></div>
 </template>
