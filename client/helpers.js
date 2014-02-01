@@ -136,6 +136,13 @@ Template.chapter.helpers({
 	}
 });
 
+Template.chapterArchive.helpers({
+	calcPages: function() {
+		console.log(this);
+		return Pages.find({chapter: this.chapter, postTime: 0, page: {$ne: 0}}).count();
+	}
+});
+
 Template.page.rendered = function() {
 	$('.divider > .icon').popup({
 		on: 'hover',
