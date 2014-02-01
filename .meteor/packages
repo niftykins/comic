@@ -22,3 +22,6 @@ less
 accounts-ui
 accounts-password
 accounts-entry
+email
+underscore
+jquery
