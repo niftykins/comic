@@ -45,10 +45,12 @@ Images.events({
 	}
 });
 
-logger = function(type, message, meta) {
+logger = function(type, message, meta, tag) {
 	if(Meteor.isServer) {
-		var user = Meteor.user();
-		if(user) meta.actor = user._id;
+		if(tag !== false) { // startup log doesn't have user
+			var user = Meteor.user();
+			if(user) meta.actor = user._id;
+		}
 		Winston.log(type, message, meta);
 	}
 };
@@ -149,11 +151,11 @@ Meteor.methods({
 					postTime: 0
 				}});
 
-				logger('info', 'New Page timed post', page);
+				logger('info', 'New Page timed post', Pages.findOne(pageId));
 			}, postTime.diff);
 		}
 
-		logger('info', 'New Page', page);
+		logger('info', 'New Page', Pages.findOne(pageId));
 
 		Chapters.update(chapter._id, { $inc: { pageCount: 1 } });
 
@@ -418,9 +420,9 @@ Meteor.methods({
 			type: attrs.type
 		};
 
-		Extras.insert(extra);
+		var extraId = Extras.insert(extra);
 
-		logger('info', 'New Extra', extra);
+		logger('info', 'New Extra', Extras.findOne(extraId));
 
 		return nextExtra;
 	},
@@ -502,9 +504,9 @@ Meteor.methods({
 			posted: Date.now()
 		};
 
-		News.insert(news);
+		var newsId = News.insert(news);
 
-		logger('info', 'New News', news);
+		logger('info', 'New News', News.findOne(newsId));
 	},
 	deleteNews: function(id) {
 		check(id, String);

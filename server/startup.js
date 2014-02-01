@@ -15,14 +15,14 @@ Meteor.startup(function() {
 				posted: Date.now(),
 				postTime: 0
 			}});
-			logger('info', 'New Page server post', page);
+			logger('info', 'New Page server post', page, false);
 		} else { // has not happened yet so start timer
 			Meteor.setTimeout(function() {
 				Pages.update(page._id, {$set: {
 					posted: Date.now(),
 					postTime: 0
 				}});
-				logger('info', 'New Page timed post', page);
+				logger('info', 'New Page timed post', page, false);
 			}, page.postTime - Date.now());
 		}
 	});

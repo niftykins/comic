@@ -177,7 +177,7 @@
 	<div class="ui attached segment">
 		{{#if isAdmin}}
 			<div class="edit-buttons pull-right">
-				<div id="btn-remove" class="btn btn-sm btn-danger">Remove</div>
+				<div class="btn btn-sm btn-danger btn-remove">Remove</div>
 			</div>
 		{{/if}}
 
@@ -197,7 +197,7 @@
 						</div>
 						<div class="modal-footer">
 							<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-							<button type="button" id="confirm-remove" class="btn btn-danger">Remove</button>
+							<button type="button" id="{{_id}}" class="btn btn-danger confirm-remove">Remove</button>
 						</div>
 					</div>
 				</dic>

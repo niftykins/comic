@@ -98,13 +98,14 @@ Template.newsFeed.events({
 });
 
 Template.newsPost.events({
-	'click #btn-remove': function(e) {
+	'click .btn-remove': function(e) {
+		Session.set('deleteNewsId', this._id); // FIX ME
 		$('#confirm-modal').modal({
 			backdrop: false
 		});
 	},
-	'click #confirm-remove': function(e) {
-		Meteor.call('deleteNews', this._id, function(error) {
+	'click .confirm-remove': function(e, temp) {
+		Meteor.call('deleteNews', Session.get('deleteNewsId'), function(error) {
 			if(error)
 				Errors.throw(error.reason);
 			else
