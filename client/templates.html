@@ -225,7 +225,7 @@
 		</div>
 		<div class="content">
 			<div class="meta">{{pluralize calcPages 'page'}}</div>
-			<div class="name">{{chapter}}. {{truncate title 28}}</div>
+			<div class="name">{{chapter}}. {{truncate title 35}}</div>
 		</div>
 	</a>
 </template>
@@ -346,7 +346,7 @@
 			<img src='{{cfsFileUrl "square" file=getFile}}'>
 		</div>
 		<div class="content">
-			<div class="name">Extra {{number}}</div>
+			<div class="name">{{truncate title 35}}</div>
 		</div>
 	</a>
 </template>
