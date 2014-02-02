@@ -2,17 +2,33 @@
   "meteor": {},
   "dependencies": {
     "basePackages": {
-      "iron-router": {},
-      "spin": {},
-      "moment": {},
-      "collectionFS": {},
-      "imagemagick": {},
-      "font-awesome-4": {},
-      "winston": {},
-      "winston-loggly": {},
-      "semantic-ui": {},
-      "bootstrap-3": {},
-      "x-editable-bootstrap3": {},
+      "iron-router": {
+        "version": "0.6.2"
+      },
+      "spin": {
+        "version": "0.2.2"
+      },
+      "moment": {
+        "version": "2.5.1"
+      },
+      "collectionFS": {
+        "version": "0.3.7"
+      },
+      "imagemagick": {
+        "version": "0.1.2"
+      },
+      "winston": {
+        "version": "0.0.3"
+      },
+      "semantic-ui": {
+        "version": "0.12.1"
+      },
+      "bootstrap-3": {
+        "version": "0.3.7"
+      },
+      "x-editable-bootstrap3": {
+        "version": "1.5.2"
+      },
       "accounts-entry": {
         "version": "0.4.4"
       }
@@ -43,20 +59,10 @@
         "tag": "v0.1.2",
         "commit": "d67bb926356d35cdff1a6d6c3c69750f3f54c059"
       },
-      "font-awesome-4": {
-        "git": "https://github.com/michaelbishop/meteor-font-awesome-4.git",
-        "tag": "v4.0.0",
-        "commit": "c28b5a0f2a2bd233c495642b40a167eda95172f5"
-      },
       "winston": {
         "git": "https://github.com/tomrogers3/meteor-winston.git",
         "tag": "v0.0.3",
         "commit": "60dc02303ca003ef05254f94fbb9bfd40915d5d3"
-      },
-      "winston-loggly": {
-        "git": "https://github.com/tomrogers3/meteor-winston-loggly.git",
-        "tag": "v0.0.3",
-        "commit": "87ac23ce1134d778d53a3b99350921f9eb15358c"
       },
       "semantic-ui": {
         "git": "https://github.com/nooitaf/meteor-semantic-ui.git",

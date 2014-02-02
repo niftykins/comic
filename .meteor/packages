@@ -5,19 +5,7 @@
 
 standard-app-packages
 preserve-inputs
-iron-router
-spin
-moment
 errors
-collectionFS
-cfs-public-folder
-imagemagick
-font-awesome-4
-winston
-winston-loggly
-semantic-ui
-bootstrap-3
-x-editable-bootstrap3
 less
 accounts-ui
 accounts-password
@@ -25,3 +13,13 @@ accounts-entry
 email
 underscore
 jquery
+iron-router
+spin
+moment
+collectionFS
+imagemagick
+winston
+semantic-ui
+bootstrap-3
+x-editable-bootstrap3
+cfs-public-folder

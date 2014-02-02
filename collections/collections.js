@@ -125,7 +125,7 @@ Meteor.methods({
 			throw new Meteor.Error(422, "Pretty sure your image upload broke.");
 		}
 
-		var postTime = 0;
+		var postTime = { when: 0 };
 		if(attrs.postNow === false) postTime = calcPostTime();
 
 		var nextPage = chapter.pageCount + 1;
@@ -144,14 +144,14 @@ Meteor.methods({
 
 		var pageId = Pages.insert(page);
 
-		if(Meteor.isServer) {
+		if(Meteor.isServer && postTime.when !== 0) {
 			Meteor.setTimeout(function() {
 				Pages.update(pageId, {$set: {
 					posted: Date.now(),
 					postTime: 0
 				}});
 
-				logger('info', 'New Page timed post', Pages.findOne(pageId));
+				logger('info', 'New Page timed post', Pages.findOne(pageId), false);
 			}, postTime.diff);
 		}
 
