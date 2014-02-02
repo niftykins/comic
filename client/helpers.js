@@ -105,6 +105,8 @@ Template.newsPost.events({
 		});
 	},
 	'click .confirm-remove': function(e, temp) {
+		$('#confirm-modal').modal('hide');
+		$('body').removeClass('modal-open');
 		Meteor.call('deleteNews', Session.get('deleteNewsId'), function(error) {
 			if(error)
 				Errors.throw(error.reason);
@@ -731,6 +733,8 @@ Template.editChapter.events({
 		});
 	},
 	'click #confirm-remove': function(e) {
+		$('#confirm-modal').modal('hide');
+		$('body').removeClass('modal-open');
 		var c = Session.get('editChapter');
 		Meteor.call('deleteChapter', c, function(error) {
 			if(error)
@@ -813,6 +817,9 @@ Template.editPage.events({
 		});
 	},
 	'click #confirm-remove': function(e) {
+		$('#confirm-modal').modal('hide');
+		$('body').removeClass('modal-open');
+
 		var c = Session.get('editChapter');
 		var p = parseInt(Session.get('editPage'), 10);
 
