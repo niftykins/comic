@@ -98,14 +98,15 @@ Template.newsFeed.events({
 });
 
 Template.newsPost.events({
-	'click .btn-remove': function(e) {
+	'click .btn-remove': function(e, temp) {
 		Session.set('deleteNewsId', this._id); // FIX ME
-		$('#confirm-modal').modal({
+		$(e.target).parent().siblings('.modal').modal({
 			backdrop: false
 		});
 	},
 	'click .confirm-remove': function(e, temp) {
-		$('#confirm-modal').modal('hide');
+		console.log('news modal', temp);
+		$(e.target).closest('.modal').modal('hide');
 		$('body').removeClass('modal-open');
 		Meteor.call('deleteNews', Session.get('deleteNewsId'), function(error) {
 			if(error)
@@ -728,12 +729,12 @@ Template.editChapter.events({
 		}
 	},
 	'click #btn-remove': function(e) {
-		$('#confirm-modal').modal({
+		$('#modal-edit-chapter').modal({
 			backdrop: false
 		});
 	},
 	'click #confirm-remove': function(e) {
-		$('#confirm-modal').modal('hide');
+		$('#modal-edit-chapter').modal('hide');
 		$('body').removeClass('modal-open');
 		var c = Session.get('editChapter');
 		Meteor.call('deleteChapter', c, function(error) {
