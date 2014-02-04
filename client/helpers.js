@@ -1,4 +1,4 @@
-var sort = { sort: ["chapter", "page"] };
+sort = { sort: ["chapter", "page"] };
 //$.fn.editable.defaults.mode = 'inline';
 
 var Init = {
