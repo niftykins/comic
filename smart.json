@@ -32,9 +32,6 @@
     },
     "sitemaps": {
       "version": "0.0.13"
-    },
-    "marked": {
-      "version": "0.2.9"
     }
   }
 }

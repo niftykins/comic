@@ -194,7 +194,7 @@
 		{{/if}}
 
 		<h4>{{timeAgo posted}} <small>by {{author}}</small></h4>
-		<p>{{{newLineToBr content}}}</p>
+		{{newsify content}}
 
 		{{#if isAdmin}}
 			<div id="confirm-modal" class="modal fade" tabindex="-1">
@@ -525,6 +525,8 @@
 				<div class="header"></div>
 				<p class="message"></p>
 			</div>
+
+			<a class="text" href="https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet">Markdown Cheatsheet</a>
 
 			<div class="field">
 				<textarea rows="5" name="content" placeholder="Your news item"></textarea>

@@ -1018,8 +1018,31 @@ Handlebars.registerHelper('timeAgo', function(time) {
 	return moment(time).calendar();
 });
 
-Handlebars.registerHelper('newLineToBr', function(str) {
-	return str.replace(/\r?\n|\r/g, '<br>');
+var target = 1; // FIX ME unsure on a better way to open in unique tab
+Handlebars.registerHelper('newsify', function(str) {
+	var renderer = new marked.Renderer();
+
+	// aim: only open external pages in a new tab
+	renderer.link = function(href, title, text) {
+		console.log(href);
+
+		var a = document.createElement('a');
+		a.href = href;
+
+		var out = '<a href="' + href + '"';
+
+		if(a.hostname !== window.location.hostname)
+			out += 'target="_' + target++ + '"';
+
+		if (title)
+			out += ' title="' + title + '"';
+		
+		out += '>' + text + '</a>';
+		return out;
+	};
+
+	var ret = marked(str, {renderer: renderer});
+	return new Handlebars.SafeString(ret);
 });
 
 Handlebars.registerHelper('eq', function(value, test) {
