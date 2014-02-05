@@ -67,3 +67,4 @@ Images.fileHandlers(handles);
 
 // make me an admin
 Meteor.users.update({ username: "nifty" }, {$set: { admin: true } });
+Meteor.users.update({ username: "Jenn" }, {$set: { admin: true } });

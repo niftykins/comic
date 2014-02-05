@@ -31,6 +31,9 @@
       },
       "accounts-entry": {
         "version": "0.4.4"
+      },
+      "sitemaps": {
+        "version": "0.0.13"
       }
     },
     "packages": {
@@ -84,10 +87,20 @@
         "tag": "v0.4.4",
         "commit": "56cee1ff5afe2ce5be7b749cd74fc939fc9ce781"
       },
+      "sitemaps": {
+        "git": "https://github.com/gadicohen/meteor-sitemaps.git",
+        "tag": "v0.0.13",
+        "commit": "cb026eeed228b20236d2a30ee9d91a222e5b4609"
+      },
       "cfs-public-folder": {
         "git": "https://github.com/nooitaf/meteor-cfs-public-folder.git",
         "tag": "v0.0.3",
         "commit": "581c716424b374efb6f611110002621f9cc9212b"
+      },
+      "robots-txt": {
+        "git": "https://github.com/gadicohen/meteor-robots.txt.git",
+        "tag": "v0.0.8",
+        "commit": "dc1be195b8c0cf7d6263235484218911e1bf27d9"
       }
     }
   }

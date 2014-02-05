@@ -29,6 +29,9 @@
     },
     "accounts-entry": {
       "version": "0.4.4"
+    },
+    "sitemaps": {
+      "version": "0.0.13"
     }
   }
 }

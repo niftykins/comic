@@ -1,8 +1,16 @@
 <head>
 	<meta charset="utf-8">
+	<meta name="description" content="Contains magic. And possibly a story.">
+	<link rel="canonical" href="http://biscomic.com">
+
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Best in Slot</title>
+	<title>Best in Slot Comic</title>
+
+	<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+	<link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png">
+	<link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
+	<link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16">
 </head>
 
 <template name="layout">
@@ -30,7 +38,7 @@
 
 <template name="headerImage">
 	<a href="{{pathFor 'home'}}">
-		<img class="ui image" src="/images/1140header.png">
+		<img class="ui image" src="/images/1140header.png" alt="Best in Slot Comic">
 	</a>
 </template>
 
@@ -167,9 +175,15 @@
 
 <template name="news">
 	<div class="news-feed">
-		{{#each news}}
-			{{> newsPost}}
-		{{/each}}
+		{{#if isNews}}	
+			{{#each news}}
+				{{> newsPost}}
+			{{/each}}
+		{{else}}
+			<div class="ui segment">
+				There is currently no news.
+			</div>
+		{{/if}}
 	</div>
 </template>
 
@@ -208,7 +222,7 @@
 
 <template name="archive">
 	<div class="ui segment">
-		<h3>Stuff</h3>
+		<h3>Comic Chapters</h3>
 
 		<div class="ui variable items">
 			{{#each chapters}}
@@ -221,7 +235,7 @@
 <template name="chapterArchive">
 	<a href="{{pathFor 'chapter'}}" class="item">
 		<div class="ui rounded image">
-			<img src='{{cfsFileUrl "thumb" file=getFile}}'>
+			<img src='{{cfsFileUrl "thumb" file=getFile}}' alt="Comic Chapter Cover">
 		</div>
 		<div class="content">
 			<div class="meta">{{pluralize calcPages 'page'}}</div>
@@ -232,10 +246,7 @@
 
 <template name="chapter">
 	<div class="ui segment">
-		<h3><a href="{{pathFor 'chapter'}}">
-			Chapter {{chapter}}, {{title}}
-		</a></h3>
-		<span>{{pluralize pageCount "page"}}</span>
+		<h3>Chapter {{chapter}}, {{title}}</h3>
 
 		<div class="ui variable items">
 			{{#each pages}}
@@ -248,7 +259,7 @@
 <template name="pageChapter">
 	<a href="{{pathFor 'page'}}" class="item">
 		<div class="ui rounded image">
-			<img src='{{cfsFileUrl "thumb" file=getFile}}'>
+			<img src='{{cfsFileUrl "thumb" file=getFile}}' alt="Comic Panel">
 		</div>
 		<div class="content">
 			<div class="name">{{#if eq page 0}}Cover{{else}}Page {{page}}{{/if}}</div>
@@ -264,7 +275,7 @@
 		<p>By {{author}}</p>
 		<p>{{timeAgo posted}}</p>
 		{{> arrows}}
-		<img class="ui centered rounded image" src='{{cfsFileUrl "default" file=getFile}}'>
+		<img class="ui centered rounded image" src='{{cfsFileUrl "default" file=getFile}}' alt="Comic Panel">
 
 		<div class="ui horizontal icon divider">
 			<i class="large dark comment icon" 
@@ -280,11 +291,11 @@
 	<div class="arrows unselectable">
 		{{#if notFirst}}
 			{{#with first}}
-				<a href="{{pathFor 'page'}}"><img class="left" src="/public/images/fastarrow.png"></a>
+				<a href="{{pathFor 'page'}}"><img class="left" src="/public/images/fastarrow.png" alt="First Comic Panel"></a>
 			{{/with}}
 
 			{{#with previous}}
-				<a href="{{pathFor 'page'}}"><img  class="left" src="/public/images/arrow.png"></a>
+				<a href="{{pathFor 'page'}}"><img  class="left" src="/public/images/arrow.png" alt="Previous Comic Panel"></a>
 			{{/with}}
 		{{/if}}
 
@@ -292,11 +303,11 @@
 
 		{{#if notLast}}
 			{{#with next}}
-				<a href="{{pathFor 'page'}}"><img  class="right" src="/public/images/arrow.png"></a>
+				<a href="{{pathFor 'page'}}"><img  class="right" src="/public/images/arrow.png" alt="Next Comic Panel"></a>
 			{{/with}}
 
 			{{#with last}}
-				<a href="{{pathFor 'page'}}"><img class="right" src="/public/images/fastarrow.png"></a>
+				<a href="{{pathFor 'page'}}"><img class="right" src="/public/images/fastarrow.png" alt="Last Comic Panel"></a>
 			{{/with}}
 		{{/if}}
 	</div>
@@ -306,11 +317,11 @@
 	<div class="arrows unselectable">
 		{{#if notFirst}}
 			{{#with first}}
-				<a href="{{pathFor 'extras'}}"><img class="left" src="/public/images/fastarrow.png"></a>
+				<a href="{{pathFor 'extras'}}"><img class="left" src="/public/images/fastarrow.png" alt="First Comic Extra"></a>
 			{{/with}}
 
 			{{#with previous}}
-				<a href="{{pathFor 'extras'}}"><img  class="left" src="/public/images/arrow.png"></a>
+				<a href="{{pathFor 'extras'}}"><img  class="left" src="/public/images/arrow.png" alt="Previous Comic Extra"></a>
 			{{/with}}
 		{{/if}}
 
@@ -318,11 +329,11 @@
 
 		{{#if notLast}}
 			{{#with next}}
-				<a href="{{pathFor 'extras'}}"><img  class="right" src="/public/images/arrow.png"></a>
+				<a href="{{pathFor 'extras'}}"><img  class="right" src="/public/images/arrow.png" alt="Next Comic Extra"></a>
 			{{/with}}
 
 			{{#with last}}
-				<a href="{{pathFor 'extras'}}"><img class="right" src="/public/images/fastarrow.png"></a>
+				<a href="{{pathFor 'extras'}}"><img class="right" src="/public/images/fastarrow.png" alt="Last Comic Extra"></a>
 			{{/with}}
 		{{/if}}
 	</div>
@@ -343,7 +354,7 @@
 <template name="extraItem">
 	<a href="{{pathFor 'extras'}}" class="item">
 		<div class="ui rounded image">
-			<img src='{{cfsFileUrl "square" file=getFile}}'>
+			<img src='{{cfsFileUrl "square" file=getFile}}' alt="Comic Extra Cover">
 		</div>
 		<div class="content">
 			<div class="name">{{truncate title 35}}</div>
@@ -365,7 +376,7 @@
 		<p>{{type}}</p>
 		{{> extraArrows}}
 
-		<img class="ui centered rounded image" src='{{cfsFileUrl "default" file=getFile}}'>
+		<img class="ui centered rounded image" src='{{cfsFileUrl "default" file=getFile}}' alt="Comic Extra">
 	</div>
 </template>
 

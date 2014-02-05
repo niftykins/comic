@@ -26,4 +26,46 @@ Meteor.startup(function() {
 			}, page.postTime - Date.now());
 		}
 	});
+
+	// sitemap
+	var out = [],
+		schapters = Chapters.find().fetch(),
+		spages = Pages.find({postTime: 0}).fetch(),
+		sextras = Extras.find().fetch(),
+		snews = News.findOne({}, {sort: ['posted']});
+
+	out.push({ page: 'extras', lastmod: Date.now() });
+	out.push({ page: 'oneshots', lastmod: Date.now() });
+	out.push({ page: 'gallery', lastmod: Date.now() });
+	out.push({ page: 'character', lastmod: Date.now() });
+
+	if(snews)
+		out.push({ page: 'news', lastmod: snews.posted });
+
+	if(schapters && spages) {
+		schapters.forEach(function(c) {
+			out.push({
+				page: c.chapter,
+				lastmod: Pages.findOne({chapter: c.chapter}, {sort: ['posted']}).posted
+			});
+		});
+
+		spages.forEach(function(p) {
+			out.push({
+				page: p.chapter + '/' + p.page,
+				lastmod: p.edited || p.posted
+			});
+		});
+	}
+
+	if(sextras) {
+		sextras.forEach(function(e) {
+			out.push({
+				page: 'extras/' + e.number,
+				lastmod: e.edited || e.posted
+			});
+		});
+	}
+
+	sitemaps.add('/Sitemap.xml', out);
 });

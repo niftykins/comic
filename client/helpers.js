@@ -1,5 +1,4 @@
 sort = { sort: ["chapter", "page"] };
-//$.fn.editable.defaults.mode = 'inline';
 
 var Init = {
 	dropdown: function() {
@@ -86,6 +85,12 @@ Template.newsFeed.helpers({
 	}
 });
 
+Template.news.helpers({
+	isNews: function() {
+		return News.find().count() > 0;
+	}
+});
+
 Template.newsFeed.events({
 	'click #news-up': function() {
 		var old = Session.get('skipNews');
@@ -141,7 +146,6 @@ Template.chapter.helpers({
 
 Template.chapterArchive.helpers({
 	calcPages: function() {
-		console.log(this);
 		return Pages.find({chapter: this.chapter, postTime: 0, page: {$ne: 0}}).count();
 	}
 });
