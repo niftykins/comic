@@ -1024,8 +1024,6 @@ Handlebars.registerHelper('newsify', function(str) {
 
 	// aim: only open external pages in a new tab
 	renderer.link = function(href, title, text) {
-		console.log(href);
-
 		var a = document.createElement('a');
 		a.href = href;
 
