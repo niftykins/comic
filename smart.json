@@ -32,6 +32,9 @@
     },
     "sitemaps": {
       "version": "0.0.13"
+    },
+    "phantomjs": {
+      "version": "0.0.2"
     }
   }
 }

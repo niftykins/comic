@@ -34,6 +34,9 @@
       },
       "sitemaps": {
         "version": "0.0.13"
+      },
+      "phantomjs": {
+        "version": "0.0.2"
       }
     },
     "packages": {
@@ -91,6 +94,11 @@
         "git": "https://github.com/gadicohen/meteor-sitemaps.git",
         "tag": "v0.0.13",
         "commit": "cb026eeed228b20236d2a30ee9d91a222e5b4609"
+      },
+      "phantomjs": {
+        "git": "https://github.com/gadicohen/meteor-phantomjs.git",
+        "tag": "v0.0.2",
+        "commit": "a72eb79af068dd5d5d617ac71a42bd74e0cb52a4"
       },
       "cfs-public-folder": {
         "git": "https://github.com/nooitaf/meteor-cfs-public-folder.git",
