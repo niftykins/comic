@@ -28,6 +28,10 @@ Meteor.startup(function() {
 		}
 	});
 
+	updateSitemap();
+});
+
+updateSitemap = function() {
 	// sitemap
 	var out = [],
 		schapters = Chapters.find().fetch(),
@@ -69,4 +73,4 @@ Meteor.startup(function() {
 	}
 
 	sitemaps.add('/Sitemap.xml', out);
-});
+};

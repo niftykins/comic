@@ -44,8 +44,8 @@
 
 <template name="footer">
 	<div class="ui segment">
-		<span>dragons are smokin' hot</span>
-		<span class="pull-right">Images, characters, story and all of the content of BiS © 2014 Jennifer Powell. All rights reserved.</span>
+		<span>Contains magic. And possibly a story.</span>
+		<span class="pull-right">Images, characters, story and all of the content of BiS © 2014 <a href="{{pathFor 'contact'}}">Jennifer Powell</a>. All rights reserved.</span>
 	</div>
 </template>
 
@@ -129,6 +129,38 @@
 
 <template name="noContent">
 	<div class="alert alert-danger">There is no content.</div>
+</template>
+
+<template name="contact">
+	<div class="ui form segment">
+		<div class="header collapse">Send us a message</div>
+
+		<form>
+			<div class="ui error message">
+				<i class="remove icon"></i>
+				<div class="header"></div>
+				<p class="message"></p>
+			</div>
+
+			<div class="field">
+				<div class="ui input">
+					<input type="text" name="name" placeholder="Name" value="">
+				</div>
+			</div>
+
+			<div class="field">
+				<div class="ui input">
+					<input type="text" name="email" placeholder="Email" value="">
+				</div>
+			</div>
+
+			<div class="field">
+				<textarea rows="5" name="content" placeholder="Message"></textarea>
+			</div>
+
+			<button class="ui blue submit button" type="submit">Submit</button>
+		</form>
+	</div>
 </template>
 
 <template name="progressBar">
@@ -369,10 +401,9 @@
 			</div>
 		{{/if}}
 
-		<h3>Extra {{number}}: {{title}}</h3>
+		<h3>{{title}}</h3>
 		<p>By {{author}}</p>
 		<p>{{timeAgo posted}}</p>
-		<p>{{type}}</p>
 		{{> extraArrows}}
 
 		<img class="ui centered rounded image" src='{{cfsFileUrl "default" file=getFile}}' alt="Comic Extra">

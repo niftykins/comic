@@ -68,3 +68,39 @@ Images.fileHandlers(handles);
 // make me an admin
 Meteor.users.update({ username: "nifty" }, {$set: { admin: true } });
 Meteor.users.update({ username: "Jenn" }, {$set: { admin: true } });
+
+// contact message
+Meteor.methods({
+	contact: function(attrs) {
+		check(attrs, {
+			name: String,
+			email: String,
+			content: String
+		});
+
+		if(!attrs.name) {
+			FormErrors.show(e.target, 422, "You need to enter a name.");
+			return;
+		}
+
+		if(!attrs.email || !attrs.email.toLowerCase().match(/^([a-z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,8})$/)) {
+			FormErrors.show(e.target, 422, "You need to enter an email.");
+			return;
+		}
+
+		if(!attrs.content) {
+			FormErrors.show(e.target, 422, "You need to type a message.");
+			return;
+		}
+
+		logger('info', 'Contact message', attrs, false);
+
+		Email.send({
+			to: 'jenn@biscomic.com',
+			cc: 'nifty@biscomic.com',
+			from: '' + attrs.email,
+			subject: 'Contact Message',
+			text: attrs.name + ' wishes to say:\n\n' + attrs.content + '\n\nYou can reach them at: ' + attrs.email
+		});
+	}
+});

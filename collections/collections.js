@@ -52,6 +52,9 @@ logger = function(type, message, meta, tag) {
 			if(user) meta.actor = user._id;
 		}
 		Winston.log(type, message, meta);
+
+		// call this here since everything gets logged anyway
+		updateSitemap();
 	}
 };
 

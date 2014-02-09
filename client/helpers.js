@@ -609,6 +609,48 @@ Template.estTime.helpers({
 	}
 });
 
+Template.contact.events({
+	'submit form': function(e) {
+		e.preventDefault();
+		FormErrors.hide(e.target);
+		var t = $(e.target);
+
+		var name = t.find('[name=name]').val();
+
+		if(!name) {
+			FormErrors.show(e.target, 422, "You need to enter a name.");
+			return;
+		}
+
+		var email = t.find('[name=email]').val();
+
+		if(!email || !email.toLowerCase().match(/^([a-z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$/)) {
+			FormErrors.show(e.target, 422, "You need to enter an email.");
+			return;
+		}
+
+		var content = t.find('[name=content]').val();
+
+		if(!content) {
+			FormErrors.show(e.target, 422, "You need to type a message.");
+			return;
+		}
+
+		var contact = {
+			name: name,
+			email: email,
+			content: content
+		};
+
+		Meteor.call('contact', contact, function(error) {
+			if(error)
+				FormErrors.show(e.target, error.error, error.reason);
+			else
+				Router.go('home');
+		});
+	}
+});
+
 Template.edit.created = function() {
 	// set up defaults if new session or use url, changes UI
 	var params = Router.current().params;
