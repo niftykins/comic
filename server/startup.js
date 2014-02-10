@@ -1,7 +1,7 @@
 Meteor.startup(function() {
+	console.log(process.env);
 	Winston.add(Winston.transports.File, {
-		//filename: process.env.PWD + '/logs/batman.log',
-		filename: '/var/log/biscomic/batman.log',
+		filename: process.env.LOG_FILE || process.env.PWD + '/batman.log',
 		maxsize: 1024 * 1024 * 1024 * 1 // 1 mb?
 	});
 
