@@ -76,6 +76,7 @@ calcPostTime = function calcPostTime() {
 	var now = moment.utc().zone(5);
 	var then = moment.utc().zone(5);
 	var hour = time.meridiem === 'pm' ? time.hour + 12 : time.hour;
+	hour = hour === 12 || hour === 24  ? hour - 12 : hour;
 	var days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 	var string = "dddd, MMMM Do YYYY, h:mm:ss a";
 

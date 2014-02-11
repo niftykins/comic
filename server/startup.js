@@ -1,5 +1,4 @@
 Meteor.startup(function() {
-	console.log(process.env);
 	Winston.add(Winston.transports.File, {
 		filename: process.env.LOG_FILE || process.env.PWD + '/batman.log',
 		maxsize: 1024 * 1024 * 1024 * 1 // 1 mb?
@@ -47,7 +46,7 @@ updateSitemap = function() {
 	if(snews)
 		out.push({ page: 'news', lastmod: snews.posted });
 
-	if(schapters && spages) {
+	if(schapters && spages && schapters.length && spages.length) {
 		schapters.forEach(function(c) {
 			out.push({
 				page: c.chapter,
@@ -63,7 +62,7 @@ updateSitemap = function() {
 		});
 	}
 
-	if(sextras) {
+	if(sextras && sextras.length) {
 		sextras.forEach(function(e) {
 			out.push({
 				page: 'extras/' + e.number,
