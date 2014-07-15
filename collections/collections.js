@@ -295,7 +295,8 @@ Meteor.methods({
 		Meteor.call('page', {
 			chapter: chapter.chapter,
 			fileId: attrs.fileId,
-			type: attrs.type
+			type: attrs.type,
+			postNow: false
 		});
 
 		return chapter.chapter;

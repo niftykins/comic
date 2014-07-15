@@ -1,1 +1,4 @@
 go
+patch
+*.sublime*
+sftp-config.json

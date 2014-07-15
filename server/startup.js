@@ -48,9 +48,14 @@ updateSitemap = function() {
 
 	if(schapters && spages && schapters.length && spages.length) {
 		schapters.forEach(function(c) {
+			var lastpage = Pages.findOne({chapter: c.chapter}, {sort: ['posted']});
+			var lastmod = Date.now();
+			if(lastpage)
+				lastmod = lastpage.posted;
+
 			out.push({
 				page: c.chapter,
-				lastmod: Pages.findOne({chapter: c.chapter}, {sort: ['posted']}).posted
+				lastmod: lastmod
 			});
 		});
 
